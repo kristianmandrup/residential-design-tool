@@ -1,0 +1,13 @@
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+
+html,
+body,
+#__next {
+  height: 100%;
+}
+
+.canvas-root {
+  height: 100%;
+  width: 100%;
+}

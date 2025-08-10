@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js + TypeScript Mini City-Builder Designer
 
-## Getting Started
+A minimal, working city-builder designer built with Next.js, TypeScript, Tailwind CSS, and @react-three/fiber.
 
-First, run the development server:
+## Features
+
+- Placeable Buildings (stacked floors + roof on top) with windows
+- Roads, Trees, Walls
+- Toolbar to select tools and placement options
+- Sidebar to view/edit selected object's properties (colors, floors, roof type)
+- Basic click-to-place + selection via raycasting
+
+## Installation
+
+Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install three @react-three/fiber @react-three/drei zustand
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Initialize Tailwind CSS:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx tailwindcss init -p
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy the configuration files and components from this project.
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```txt
+├── context/
+│   └── EditorContext.tsx      # Global state management
+├── components/
+│   ├── Building.tsx           # Building component with floors and roof
+│   ├── Roof.tsx              # Roof component (flat, gabled, hipped)
+│   ├── Tree.tsx              # Tree component
+│   ├── Road.tsx              # Road component
+│   ├── Wall.tsx              # Wall component
+│   ├── Scene.tsx             # 3D scene with raycasting
+│   ├── Toolbar.tsx           # Tool selection toolbar
+│   └── Sidebar.tsx           # Property editor sidebar
+├── pages/
+│   ├── _app.tsx              # Next.js app wrapper
+│   └── index.tsx             # Main page
+├── styles/
+│   └── globals.css          # Global styles with Tailwind
+├── tailwind.config.js        # Tailwind configuration
+└── README.md                 # This file
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Usage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Select a tool from the left toolbar (S=Select, B=Building, T=Tree, R=Road, W=Wall)
+2. Click in the 3D scene to place objects
+3. Select objects to edit their properties in the right sidebar
+4. Use mouse to orbit around the scene (left-click drag)
+5. Use mouse to zoom (scroll wheel)
 
-## Deploy on Vercel
+## Technical Details
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Uses React Three Fiber for 3D rendering
+- Implements custom raycasting for object selection
+- State management with React Context
+- Dynamic imports to avoid SSR issues with 3D components
+- TypeScript for type safety
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- This is a compact, pragmatic implementation to get you started. It focuses on an easy-to-understand state model and simple placement/selection logic.
+- You can extend this with transform controls, save/load (serialize objects to JSON), snapping to grid, undo/redo, advanced roof geometry, procedural windows, textures, and performance optimizations.
+- To make this production-ready, add: better selection highlighting, gizmos for move/rotate/scale (use TransformControls from @react-three/drei), collision avoidance, and a more robust UI for drawing multi-segment roads.
+- Because we used client components and dynamic import for the Scene, this works in Next.js pages router. If you use the app router, move components into the client scope as needed.
