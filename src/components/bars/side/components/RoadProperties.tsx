@@ -36,7 +36,7 @@ export default function RoadProperties({
         depthMax={5}
         heightMin={0.05}
         heightMax={1}
-        showHeight={true}
+        showHeight={false}
       />
 
       <ColorField

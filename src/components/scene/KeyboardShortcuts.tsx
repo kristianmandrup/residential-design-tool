@@ -1,5 +1,5 @@
 import { useStore, StoreState } from "../../store/useStore";
-import { useTool } from "../../context/ToolContext";
+import { useTool } from "../../contexts/ToolContext";
 import * as THREE from "three";
 
 export function useKeyboardShortcuts() {
@@ -50,6 +50,12 @@ export function useKeyboardShortcuts() {
     if (e.key.toLowerCase() === "t") {
       e.preventDefault();
       setSelectedTool("tree");
+    }
+
+    // R key - Road
+    if (e.key.toLowerCase() === "r") {
+      e.preventDefault();
+      setSelectedTool("road");
     }
 
     // Space key - toggle between Select and Build mode

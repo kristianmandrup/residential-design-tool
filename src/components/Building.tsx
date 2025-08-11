@@ -1,8 +1,9 @@
 "use client";
 import React, { useRef, useEffect } from "react";
-import { BuildingObj, useStore, StoreState } from "@/store/useStore";
+import { useStore } from "@/store/useStore";
 import * as THREE from "three";
 import { Roof } from "@/components/build-objects";
+import { BuildingObj, StoreState } from "@/store/storeTypes";
 
 export default function Building({ data }: { data: BuildingObj }) {
   const groupRef = useRef<THREE.Group | null>(null);

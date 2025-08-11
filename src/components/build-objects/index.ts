@@ -1,6 +1,9 @@
-export { default as Building } from "./Building";
-export { default as Tree } from "./Tree";
-export { default as Wall } from "./Wall";
-export { default as Road } from "./Road";
-export { default as Water } from "./Water";
-export { default as Roof } from "./Roof";
+export { default as Building } from "./BuildingObj";
+export { default as Tree } from "./TreeObj";
+export { default as Wall } from "./WallObj";
+export { default as Road } from "./RoadObj";
+export { default as Water } from "./WaterObj";
+export { default as Roof } from "./RoofObj";
+
+// Road sub-components
+export * from "./road";

@@ -1,18 +1,16 @@
 "use client";
 import React from "react";
 import dynamic from "next/dynamic";
-import { Sidebar, Toolbar } from "@/components/bars";
-import { EditorProvider } from "@/context/EditorContext";
-import { StoreProvider, useStore } from "@/store/useStore";
-import { ToolProvider } from "@/context/ToolContext";
+import { Sidebar } from "@/components/bars";
+import { EditorProvider } from "@/contexts/EditorContext";
+import { StoreProvider } from "@/store/useStore";
+import { ToolProvider } from "@/contexts/ToolContext";
 import { useKeyboardShortcuts } from "@/components/scene/KeyboardShortcuts";
 
 // dynamic import of Scene to avoid SSR issues
 const Scene = dynamic(() => import("@/components/MainScene"), { ssr: false });
 
 function KeyboardHandler() {
-  const removeObject = useStore((s) => s.removeObject);
-  const selectedId = useStore((s) => s.selectedId);
   const { handleKeyDown } = useKeyboardShortcuts();
 
   React.useEffect(() => {

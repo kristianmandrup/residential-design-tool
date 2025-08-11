@@ -1,17 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
-import { useStore, StoreState } from "../../store/useStore";
-import { useTool } from "../../context/ToolContext";
+import { useStore, StoreState } from "@/store";
+import { useTool } from "@/contexts/ToolContext";
 import { useKeyboardShortcuts } from "./KeyboardShortcuts";
 import { usePointerEventHandlers } from "./PointerEventHandlers";
-import { useRoadDrawingLogic } from "./RoadDrawingLogic";
-import {
-  getIntersection,
-  snapVec,
-  checkCollision,
-  selectObject,
-} from "./SceneUtils";
+import * as THREE from "three";
 
 export function SelectionAndPlacement() {
   const { camera, gl, scene } = useThree();
@@ -25,7 +18,7 @@ export function SelectionAndPlacement() {
   const objects = useStore((s: StoreState) => s.objects);
   const { selectedTool, setSelectedTool } = useTool();
 
-  // road drawing state
+  // Road drawing state
   const [isDrawingRoad, setIsDrawingRoad] = useState(false);
   const [tempRoadPoints, setTempRoadPoints] = useState<[number, number][]>([]);
   const [lastClickTime, setLastClickTime] = useState<number | null>(null);
@@ -33,39 +26,20 @@ export function SelectionAndPlacement() {
   // Keyboard shortcuts
   const { handleKeyDown } = useKeyboardShortcuts();
 
-  // Road drawing logic
-  const roadDrawingState = {
-    isDrawingRoad,
-    tempRoadPoints,
-    lastClickTime,
-  };
-
-  const roadDrawingActions = {
-    setIsDrawingRoad,
-    setTempRoadPoints,
-    setLastClickTime,
-    addObject: (obj: any) => addObject(obj),
-  };
-
-  const { handleRoadDrawing } = useRoadDrawingLogic(
-    roadDrawingState,
-    roadDrawingActions
-  );
-
   // Pointer event handlers
   const { handleDown, handleContextMenu } = usePointerEventHandlers({
     canvas: gl.domElement,
     camera,
     scene,
-    addObject: (obj: any) => addObject(obj),
+    addObject,
     setSelectedId,
     removeObject,
     gridSize,
     snap,
     objects,
-    updateObject: (id: string, updates: any) => updateObject(id, updates),
+    updateObject,
     selectedTool: selectedTool || "select",
-    setSelectedTool: (tool: string) => setSelectedTool(tool as any),
+    setSelectedTool,
     tempRoadPoints,
     setTempRoadPoints,
     setIsDrawingRoad,
@@ -74,15 +48,33 @@ export function SelectionAndPlacement() {
     selectedId,
   });
 
-  // pointer handling on canvas
+  // Highlight selected object
+  useEffect(() => {
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh && child.userData.objectId) {
+        const mesh = child as THREE.Mesh;
+        if (mesh.userData.objectId === selectedId) {
+          if (mesh.material instanceof THREE.MeshStandardMaterial) {
+            mesh.material.emissive = new THREE.Color(0x00ff00);
+            mesh.material.emissiveIntensity = 0.3;
+          }
+        } else {
+          if (mesh.material instanceof THREE.MeshStandardMaterial) {
+            mesh.material.emissive = new THREE.Color(0x000000);
+            mesh.material.emissiveIntensity = 0;
+          }
+        }
+      }
+    });
+  }, [selectedId, scene]);
+
+  // Pointer handling on canvas
   useEffect(() => {
     const canvas = gl.domElement;
     if (!canvas) return;
 
-    // Keyboard shortcuts
     canvas.addEventListener("keydown", handleKeyDown);
     canvas.addEventListener("contextmenu", handleContextMenu);
-
     canvas.addEventListener("pointerdown", handleDown);
     return () => {
       canvas.removeEventListener("keydown", handleKeyDown);
@@ -110,6 +102,5 @@ export function SelectionAndPlacement() {
     handleDown,
   ]);
 
-  // render temporary road line as a simple helper (optional)
   return null;
 }

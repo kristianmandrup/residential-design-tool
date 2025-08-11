@@ -3,12 +3,17 @@ import React from "react";
 interface TransformModeUIProps {
   mode: "translate" | "rotate" | "scale";
   setMode: (m: "translate" | "rotate" | "scale") => void;
+  style: React.CSSProperties;
 }
 
-export function TransformModeUI({ mode, setMode }: TransformModeUIProps) {
+export function TransformModeUI({
+  mode,
+  setMode,
+  style,
+}: TransformModeUIProps) {
   // Simple overlay at bottom-right of canvas:
   return (
-    <div style={{ position: "absolute", right: 20, bottom: 20 }}>
+    <div style={style}>
       <div className="bg-white/90 p-2 rounded flex gap-1 backdrop-blur-sm border border-gray-200 shadow-sm">
         <button
           onClick={() => setMode("translate")}

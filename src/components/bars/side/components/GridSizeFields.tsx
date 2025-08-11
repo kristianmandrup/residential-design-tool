@@ -18,15 +18,15 @@ interface GridSizeFieldsProps {
 }
 
 export default function GridSizeFields({
-  gridWidth = 1,
-  gridDepth = 1,
+  gridWidth = 2,
+  gridDepth = 2,
   gridHeight = 1,
   onGridWidthChange,
   onGridDepthChange,
   onGridHeightChange,
-  widthMin = 1,
+  widthMin = 2,
   widthMax = 10,
-  depthMin = 1,
+  depthMin = 2,
   depthMax = 10,
   heightMin = 1,
   heightMax = 5,
@@ -40,6 +40,7 @@ export default function GridSizeFields({
         onChange={onGridWidthChange}
         min={widthMin}
         max={widthMax}
+        step={2}
       />
       <NumberField
         label="Grid Depth (units)"
@@ -48,6 +49,7 @@ export default function GridSizeFields({
         min={depthMin}
         max={depthMax}
         className="mt-3"
+        step={2}
       />
       {showHeight && (
         <NumberField

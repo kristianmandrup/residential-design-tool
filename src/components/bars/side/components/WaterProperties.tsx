@@ -46,7 +46,7 @@ export default function WaterProperties({
         }
         heightMin={0.05}
         heightMax={1}
-        showHeight={true}
+        showHeight={false}
       />
 
       {selected.shape === "rectangular" && (
@@ -56,14 +56,14 @@ export default function WaterProperties({
           onChange={(value) => {
             let numValue = Number(value);
             // Round to nearest 45-degree increment for grid snapping
-            numValue = Math.round(numValue / 45) * 45;
+            numValue = Math.round(numValue / 90) * 90;
             // Ensure value is within 0-360 range
             numValue = ((numValue % 360) + 360) % 360;
             updateObject(selected.id, {
               direction: numValue,
             });
           }}
-          step={45}
+          step={90}
           className="mt-3"
         />
       )}

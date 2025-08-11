@@ -1,11 +1,15 @@
 import React from "react";
 import { useStore } from "@/store/useStore";
+import { Toggle } from "@radix-ui/react-toggle";
+// import { Toggle } from "@/components/ui/toggle";
+import { useGrid } from "@/contexts/GridContext";
 
 export default function GridSection() {
   const gridSize = useStore((s) => s.gridSize);
   const setGridSize = useStore((s) => s.setGridSize);
   const snap = useStore((s) => s.snapEnabled);
   const toggleSnap = useStore((s) => s.toggleSnap);
+  const { showGrid, toggleGrid } = useGrid();
 
   return (
     <section className="bg-white rounded-xl border border-gray-200 p-5 shadow-md hover:shadow-lg transition-shadow duration-300">
@@ -13,6 +17,15 @@ export default function GridSection() {
         <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
         Grid
       </h3>
+
+      {/* Toggle Grid Button */}
+      <Toggle
+        pressed={showGrid}
+        onPressedChange={toggleGrid}
+        className="bg-white shadow-md hover:bg-gray-100 data-[state=on]:bg-blue-500 data-[state=on]:text-white"
+      >
+        Grid
+      </Toggle>
 
       <div className="text-sm mt-3 text-gray-700 font-medium">
         Snap:{" "}

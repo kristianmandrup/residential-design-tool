@@ -6,6 +6,9 @@ export interface SceneObject {
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
+  gridWidth?: number;
+  gridDepth?: number;
+  gridHeight?: number;
   [key: string]: unknown;
 }
 
@@ -43,57 +46,54 @@ export function snapVec(
 export function checkCollision(
   newPos: [number, number, number],
   newType: string,
-  newScale: [number, number, number],
+  newGridWidth: number,
+  newGridDepth: number,
   objects: SceneObject[],
+  gridSize: number,
+  snap: boolean,
   excludeId?: string
 ): boolean {
-  const collisionDistance = 1.5; // Minimum distance between objects
+  // Convert new position to grid coordinates
+  const gridX = snap ? Math.round(newPos[0] / gridSize) : newPos[0] / gridSize;
+  const gridZ = snap ? Math.round(newPos[2] / gridSize) : newPos[2] / gridSize;
 
+  // Calculate the grid cells occupied by the new object
+  const newGridCells: [number, number][] = [];
+  const halfWidth = (newGridWidth || 1) / 2;
+  const halfDepth = (newGridDepth || 1) / 2;
+  for (let x = -halfWidth; x < halfWidth; x++) {
+    for (let z = -halfDepth; z < halfDepth; z++) {
+      newGridCells.push([Math.round(gridX + x), Math.round(gridZ + z)]);
+    }
+  }
+
+  // Check for overlap with existing objects
   for (const obj of objects) {
     if (obj.id === excludeId) continue;
 
-    const distance = Math.sqrt(
-      Math.pow(newPos[0] - obj.position[0], 2) +
-        Math.pow(newPos[2] - obj.position[2], 2)
-    );
+    const objGridX = snap
+      ? Math.round(obj.position[0] / gridSize)
+      : obj.position[0] / gridSize;
+    const objGridZ = snap
+      ? Math.round(obj.position[2] / gridSize)
+      : obj.position[2] / gridSize;
 
-    // Calculate object sizes based on type and scale
-    let obj1Size = collisionDistance;
-    let obj2Size = collisionDistance;
-
-    // Adjust sizes based on object types
-    switch (newType) {
-      case "building":
-        obj1Size = 2 * Math.max(newScale[0], newScale[2]);
-        break;
-      case "tree":
-        obj1Size = 1 * Math.max(newScale[0], newScale[2]);
-        break;
-      case "wall":
-        obj1Size = Math.max(newScale[0], newScale[2]) * 3;
-        break;
-      case "water":
-        obj1Size = (newScale[0] + newScale[2]) * 2;
-        break;
+    const objHalfWidth = (obj.gridWidth || 1) / 2;
+    const objHalfDepth = (obj.gridDepth || 1) / 2;
+    const objGridCells: [number, number][] = [];
+    for (let x = -objHalfWidth; x < objHalfWidth; x++) {
+      for (let z = -objHalfDepth; z < objHalfDepth; z++) {
+        objGridCells.push([Math.round(objGridX + x), Math.round(objGridZ + z)]);
+      }
     }
 
-    switch (obj.type) {
-      case "building":
-        obj2Size = 2 * Math.max(obj.scale[0], obj.scale[2]);
-        break;
-      case "tree":
-        obj2Size = 1 * Math.max(obj.scale[0], obj.scale[2]);
-        break;
-      case "wall":
-        obj2Size = Math.max(obj.scale[0], obj.scale[2]) * 3;
-        break;
-      case "water":
-        obj2Size = (obj.scale[0] + obj.scale[2]) * 2;
-        break;
-    }
-
-    if (distance < (obj1Size + obj2Size) / 2) {
-      return true; // Collision detected
+    // Check if any grid cells overlap
+    for (const newCell of newGridCells) {
+      for (const objCell of objGridCells) {
+        if (newCell[0] === objCell[0] && newCell[1] === objCell[1]) {
+          return true; // Collision detected
+        }
+      }
     }
   }
 

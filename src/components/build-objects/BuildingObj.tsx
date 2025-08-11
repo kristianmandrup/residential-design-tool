@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from "react";
 import { BuildingObj, useStore, StoreState } from "@/store/useStore";
 import * as THREE from "three";
-import Roof from "./Roof";
+import Roof from "./RoofObj";
 
 export default function Building({ data }: { data: BuildingObj }) {
   const groupRef = useRef<THREE.Group | null>(null);
@@ -23,7 +23,7 @@ export default function Building({ data }: { data: BuildingObj }) {
   const gridHeight = data.gridHeight || 1; // Default 1 grid unit height
 
   // Convert grid units to actual world units (1 grid unit = 1.2 world units)
-  const gridSize = 1.2;
+  const gridSize = 1.0;
   const width = gridWidth * gridSize;
   const depth = gridDepth * gridSize;
   const floorH = gridHeight * gridSize;

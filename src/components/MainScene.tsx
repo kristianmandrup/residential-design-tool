@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Grid, Html } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Html } from "@react-three/drei";
 import {
   Ground,
   SceneObjects,
@@ -9,35 +9,67 @@ import {
   TransformControlsManager,
   TransformModeUI,
 } from "./scene";
+import { useGrid } from "@/contexts/GridContext";
+import * as THREE from "three";
+
+function TransparentGrid({ size = 100, divisions = 100, color = "#888" }) {
+  const grid = React.useMemo(
+    () => new THREE.GridHelper(size, divisions, color, color),
+    [size, divisions, color]
+  );
+  grid.material.transparent = true;
+  grid.material.opacity = 0.6; // slightly more visible
+  grid.material.depthWrite = false;
+  return <primitive object={grid} position={[0, 0.001, 0]} />;
+}
 
 function SceneWrapper() {
-  const { gl } = useThree();
   const [transformMode, setTransformMode] = React.useState<
     "translate" | "rotate" | "scale"
   >("translate");
 
+  const { showGrid } = useGrid();
+  const [viewportStyle, setViewportStyle] = React.useState({});
+
+  React.useEffect(() => {
+    const updateViewportStyle = () => {
+      const width = window.innerWidth / 2;
+      const height = window.innerHeight / 2;
+      console.log({ width, height });
+
+      const right = width - 200;
+      const bottom = height - 40;
+      console.log({ right, bottom });
+      setViewportStyle({
+        position: "absolute",
+        right: `-${right}px`,
+        bottom: `-${bottom}px`,
+        zIndex: 10,
+      });
+    };
+
+    updateViewportStyle();
+    window.addEventListener("resize", updateViewportStyle);
+    return () => window.removeEventListener("resize", updateViewportStyle);
+  }, []);
+
   return (
     <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+      <ambientLight intensity={1.0} />
+      <directionalLight position={[10, 10, 5]} intensity={1.2} castShadow />
 
-      <Grid
-        args={[100, 100]}
-        cellSize={1}
-        sectionColor="#888"
-        fadeDistance={50}
-        cellThickness={1}
-        sectionThickness={1}
-      />
+      {showGrid && <TransparentGrid size={100} divisions={100} color="#888" />}
 
       <Ground />
-
       <SceneObjects />
-
       <SelectionAndPlacement />
 
       <Html>
-        <TransformModeUI mode={transformMode} setMode={setTransformMode} />
+        <TransformModeUI
+          mode={transformMode}
+          setMode={setTransformMode}
+          style={viewportStyle}
+        />
       </Html>
 
       <TransformControlsManager
@@ -45,9 +77,6 @@ function SceneWrapper() {
         setMode={setTransformMode}
       />
 
-      {/* TransformControls: attach to selected object */}
-      {/* TransformControls will be imported at top. To make orbit disable/enable behavior work,
-          we rely on three's controls instance being the OrbitControls used by Drei. */}
       <OrbitControls makeDefault />
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useEditor } from "@/contexts/EditorContext";
+import { useEditor } from "../contexts/EditorContext";
 
 const IconButton: React.FC<{
   active?: boolean;
@@ -11,11 +11,9 @@ const IconButton: React.FC<{
   <button
     title={title}
     onClick={onClick}
-    className={`p-2 rounded transition-all duration-200 ${
-      active
-        ? "bg-blue-600 text-white shadow-lg transform scale-105 ring-2 ring-blue-400 ring-opacity-50"
-        : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white hover:shadow-md"
-    } w-12 h-12 flex items-center justify-center font-bold`}
+    className={`p-2 rounded ${
+      active ? "bg-blue-600" : "hover:bg-gray-800"
+    } w-12 h-12 flex items-center justify-center`}
   >
     {children}
   </button>

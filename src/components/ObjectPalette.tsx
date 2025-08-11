@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
-import { StoreState, useStore } from "@/store/useStore";
-import { useTool } from "@/contexts/ToolContext";
-import PaletteItem from "./PaletteItem";
+import { useStore } from "../store/useStore";
+import { useTool } from "../contexts/ToolContext";
+import { PaletteItem } from "./palette";
+import { StoreState } from "@/store/storeTypes";
 
 export default function ObjectPalette() {
   const addObject = useStore((s: StoreState) => s.addObject);
@@ -59,16 +60,6 @@ export default function ObjectPalette() {
 
   const paletteItems = [
     {
-      id: "select",
-      name: "Select",
-      icon: "👆",
-      shortcut: "S",
-      color: "bg-gray-500",
-      action: () => {
-        setSelectedTool("select");
-      },
-    },
-    {
       id: "building",
       name: "Building",
       icon: "🏠",
@@ -76,6 +67,7 @@ export default function ObjectPalette() {
       color: "bg-blue-600",
       action: () => {
         setSelectedTool("building");
+        createBuilding();
       },
     },
     {
@@ -86,6 +78,7 @@ export default function ObjectPalette() {
       color: "bg-green-500",
       action: () => {
         setSelectedTool("tree");
+        createTree();
       },
     },
     {
@@ -96,6 +89,7 @@ export default function ObjectPalette() {
       color: "bg-yellow-500",
       action: () => {
         setSelectedTool("wall");
+        createWall();
       },
     },
     {
@@ -106,16 +100,7 @@ export default function ObjectPalette() {
       color: "bg-gray-700",
       action: () => {
         setSelectedTool("road");
-      },
-    },
-    {
-      id: "water",
-      name: "Water",
-      icon: "💧",
-      shortcut: "A",
-      color: "bg-blue-500",
-      action: () => {
-        setSelectedTool("water");
+        createRoad();
       },
     },
   ];
@@ -123,7 +108,7 @@ export default function ObjectPalette() {
   const selectedItem = objects.find((obj) => obj.id === selectedId);
 
   return (
-    <div className="grid grid-cols-2 gap-3 m-4">
+    <div className="flex flex-col gap-3 m-4 space-y-3">
       {paletteItems.map((item) => (
         <PaletteItem
           key={item.id}
@@ -133,7 +118,9 @@ export default function ObjectPalette() {
           shortcut={item.shortcut}
           color={item.color}
           action={item.action}
-          isSelected={selectedTool === item.id}
+          isSelected={
+            selectedTool === item.id || selectedItem?.type === item.id
+          }
         />
       ))}
     </div>

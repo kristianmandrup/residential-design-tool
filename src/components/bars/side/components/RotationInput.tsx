@@ -1,5 +1,5 @@
 import React from "react";
-import { SceneObj } from "@/store/useStore";
+import { SceneObj } from "@/store";
 
 interface RotationInputProps {
   selected: SceneObj;
@@ -10,6 +10,9 @@ export default function RotationInput({
   selected,
   updateObject,
 }: RotationInputProps) {
+  // Convert radians to degrees for display
+  const rotationInDegrees = Math.round((selected.rotation[1] * 180) / Math.PI);
+
   return (
     <div>
       <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -17,28 +20,34 @@ export default function RotationInput({
       </label>
       <input
         type="number"
-        step="10"
+        step="90"
         min="0"
-        max="360"
+        max="270"
         className="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 font-medium text-gray-700"
-        value={selected.rotation[1]}
+        value={rotationInDegrees}
         onChange={(e) => {
           const newRotation = [...selected.rotation] as [
             number,
             number,
             number
           ];
-          let value = Number(e.target.value || "0");
-          // Round to nearest 45-degree increment for grid snapping
-          value = Math.round(value / 45) * 45;
-          // Ensure value is within 0-360 range
-          value = ((value % 360) + 360) % 360;
-          newRotation[1] = value;
+          let degrees = Number(e.target.value || "0");
+
+          // Snap to 90-degree increments (0, 90, 180, 270)
+          degrees = Math.round(degrees / 90) * 90;
+
+          // Ensure value is within 0-270 range (0, 90, 180, 270)
+          degrees = Math.max(0, Math.min(270, degrees));
+
+          // Convert degrees to radians for Three.js
+          const radians = (degrees * Math.PI) / 180;
+          newRotation[1] = radians;
+
           updateObject(selected.id, { rotation: newRotation });
         }}
       />
       <div className="text-xs text-gray-500 mt-1">
-        Increments of 10° (0°, 10°, 20°, ..., 350°)
+        90° increments (0°, 90°, 180°, 270°)
       </div>
     </div>
   );
