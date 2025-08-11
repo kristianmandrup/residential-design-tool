@@ -1,18 +1,20 @@
 import React from "react";
 import { BuildingObj, SceneObj } from "@/store";
-import { SwitchField, ColorField } from "../../../../generic";
+import { SwitchField, ColorField, InputField } from "../../../../generic";
 import CollapsibleSection from "../../CollapsibleSection";
 
 interface FloorPropertiesProps {
   selected: BuildingObj;
   selectedFloor: number;
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
+  floorName?: string;
 }
 
 export function FloorProperties({
   selected,
   selectedFloor,
   updateObject,
+  floorName,
 }: FloorPropertiesProps) {
   const floorProperties = selected.floorProperties[selectedFloor];
 
@@ -35,11 +37,22 @@ export function FloorProperties({
 
   return (
     <CollapsibleSection
-      title={`Floor ${selectedFloor + 1} Properties`}
+      title={
+        floorName
+          ? `${floorName} Properties`
+          : `Floor ${selectedFloor + 1} Properties`
+      }
       defaultCollapsed={true}
       icon={<span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>}
     >
       <div className="space-y-4">
+        <InputField
+          label="Floor name"
+          value={floorProperties.name || ""}
+          onChange={(value) => updateFloorProperties({ name: value })}
+          placeholder="Enter floor name"
+        />
+
         <SwitchField
           label="Windows enabled"
           checked={floorProperties.windowsEnabled}

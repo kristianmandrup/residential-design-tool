@@ -2,6 +2,7 @@ import React from "react";
 import { useStore } from "@/store/useStore";
 import { ObjectPropertiesSection } from "./ObjectPropertiesSection";
 import Section from "../../generic/Section";
+import InputField from "../../generic/InputField";
 import Label from "../../generic/Label";
 
 export default function SelectedSection() {
@@ -22,15 +23,12 @@ export default function SelectedSection() {
     selectedObject && (
       <Section>
         <div>
-          <Label htmlFor="selected-name">Name</Label>
-          <input
-            type="text"
-            id="selected-name"
+          <InputField
+            label="Name"
             value={selectedObject.name}
-            onChange={(e) =>
-              updateObject(selectedObject.id, { name: e.target.value })
+            onChange={(value) =>
+              updateObject(selectedObject.id, { name: value })
             }
-            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
           />
         </div>
         <div>

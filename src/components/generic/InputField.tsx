@@ -38,7 +38,7 @@ export default function InputField({
         placeholder={placeholder}
         disabled={disabled}
         required={required}
-        className="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 font-medium text-gray-700 disabled:bg-gray-100 disabled:text-gray-500"
+        className="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 font-medium text-gray-700 disabled:bg-gray-100 disabled:text-gray-500"
       />
     </div>
   );

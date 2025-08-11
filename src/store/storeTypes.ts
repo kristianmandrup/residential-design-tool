@@ -16,6 +16,7 @@ export interface SceneBase {
 export interface FloorProperties {
   windowsEnabled: boolean;
   wallColor: string;
+  name?: string;
 }
 
 export interface BuildingObj extends SceneBase {

@@ -16,7 +16,7 @@ export default function Label({
   return (
     <label
       htmlFor={htmlFor}
-      className={`block text-sm font-medium text-gray-700 ${className}`}
+      className={`block text-sm font-medium text-gray-700 ${className} pb-1`}
     >
       {children}
       {required && <span className="ml-1 text-red-500">*</span>}
