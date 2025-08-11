@@ -5,6 +5,7 @@ import { Sidebar, Toolbar } from "@/components/bars";
 import { EditorProvider } from "@/context/EditorContext";
 import { StoreProvider, useStore } from "@/store/useStore";
 import { ToolProvider } from "@/context/ToolContext";
+import { useKeyboardShortcuts } from "@/components/scene/KeyboardShortcuts";
 
 // dynamic import of Scene to avoid SSR issues
 const Scene = dynamic(() => import("@/components/MainScene"), { ssr: false });
@@ -12,21 +13,14 @@ const Scene = dynamic(() => import("@/components/MainScene"), { ssr: false });
 function KeyboardHandler() {
   const removeObject = useStore((s) => s.removeObject);
   const selectedId = useStore((s) => s.selectedId);
+  const { handleKeyDown } = useKeyboardShortcuts();
 
   React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if Delete key (key "Delete") or Backspace (key "Backspace") is pressed
-      if ((event.key === "Delete" || event.key === "Backspace") && selectedId) {
-        event.preventDefault();
-        removeObject(selectedId);
-      }
-    };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [removeObject, selectedId]);
+  }, [handleKeyDown]);
 
   return null;
 }

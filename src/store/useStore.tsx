@@ -178,9 +178,9 @@ export const useStore = create<StoreState>((set, get) => ({
         : {}),
       ...(obj.type === "water"
         ? {
-            radius: (obj as Partial<WaterObj>).radius ?? 2,
-            gridWidth: (obj as Partial<WaterObj>).gridWidth ?? 2,
-            gridDepth: (obj as Partial<WaterObj>).gridDepth ?? 2,
+            radius: (obj as Partial<WaterObj>).radius ?? 1,
+            gridWidth: (obj as Partial<WaterObj>).gridWidth ?? 1,
+            gridDepth: (obj as Partial<WaterObj>).gridDepth ?? 1,
             gridHeight: (obj as Partial<WaterObj>).gridHeight ?? 0.1,
           }
         : {}),

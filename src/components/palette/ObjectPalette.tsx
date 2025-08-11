@@ -133,10 +133,7 @@ export default function ObjectPalette() {
           shortcut={item.shortcut}
           color={item.color}
           action={item.action}
-          isSelected={
-            selectedTool === item.id ||
-            (selectedItem && selectedItem.type === item.id)
-          }
+          isSelected={selectedTool === item.id}
         />
       ))}
     </div>
