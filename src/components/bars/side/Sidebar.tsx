@@ -1,7 +1,6 @@
 import React from "react";
 import {
   PaletteSection,
-  ProjectSection,
   GridSection,
   SelectedSection,
   TipsSection,
@@ -16,7 +15,6 @@ export default function Sidebar() {
       </h2>
 
       <PaletteSection />
-      <ProjectSection />
       <GridSection />
       <SelectedSection />
       <TipsSection />

@@ -1,13 +1,13 @@
 import React from "react";
-import { TreeObj, SceneObj } from "@/store/useStore";
-import GridSizeFields from "./GridSizeFields";
+import { TreeObj, SceneObj } from "@/store";
+import GridSizeFields from "../GridSizeFields";
 
 interface TreePropertiesProps {
   selected: TreeObj;
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
 }
 
-export default function TreeProperties({
+export function TreeProperties({
   selected,
   updateObject,
 }: TreePropertiesProps) {
@@ -32,3 +32,5 @@ export default function TreeProperties({
     />
   );
 }
+
+export default TreeProperties;

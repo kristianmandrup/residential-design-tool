@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { TreeObj } from "@/store/useStore";
+import { TreeObj } from "@/store/storeTypes";
 import * as THREE from "three";
 
 export default function Tree({ data }: { data: TreeObj }) {
@@ -40,6 +40,11 @@ export default function Tree({ data }: { data: TreeObj }) {
       <mesh position={[0, height * 0.9, 0]}>
         <sphereGeometry args={[height * 0.4, 8, 8]} />
         <meshStandardMaterial color={data.foliageColor ?? "#2E8B57"} />
+      </mesh>
+      {/* highlight bounding when selected */}
+      <mesh position={[0, height * 0.5, 0]}>
+        <boxGeometry args={[width + 0.3, height + 0.3, depth + 0.3]} />
+        <meshBasicMaterial color="yellow" wireframe transparent opacity={0.4} />
       </mesh>
     </group>
   );

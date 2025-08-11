@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/bars";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { StoreProvider } from "@/store/useStore";
 import { ToolProvider } from "@/contexts/ToolContext";
+import { GridProvider } from "@/contexts/GridContext";
 import { useKeyboardShortcuts } from "@/components/scene/KeyboardShortcuts";
 
 // dynamic import of Scene to avoid SSR issues
@@ -14,9 +15,21 @@ function KeyboardHandler() {
   const { handleKeyDown } = useKeyboardShortcuts();
 
   React.useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
+    const handleKeyDownWithCheck = (e: KeyboardEvent) => {
+      // Don't handle keyboard shortcuts if an input field is focused
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+      handleKeyDown(e);
+    };
+
+    window.addEventListener("keydown", handleKeyDownWithCheck);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDownWithCheck);
     };
   }, [handleKeyDown]);
 
@@ -28,16 +41,18 @@ export default function Home() {
     <StoreProvider>
       <EditorProvider>
         <ToolProvider>
-          <div className="h-screen w-screen flex">
-            <div className="flex-1 relative">
-              <Scene />
-            </div>
+          <GridProvider>
+            <div className="flex w-screen h-screen">
+              <div className="relative flex-1">
+                <Scene />
+              </div>
 
-            <div className="w-80 bg-white border-l p-4 overflow-auto">
-              <Sidebar />
+              <div className="p-4 overflow-auto bg-white border-l w-140">
+                <Sidebar />
+              </div>
             </div>
-          </div>
-          <KeyboardHandler />
+            <KeyboardHandler />
+          </GridProvider>
         </ToolProvider>
       </EditorProvider>
     </StoreProvider>

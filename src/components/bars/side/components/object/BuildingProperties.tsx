@@ -1,16 +1,15 @@
 import React from "react";
-import { BuildingObj, SceneObj } from "@/store/useStore";
-import NumberField from "./generic/NumberField";
-import GridSizeFields from "./GridSizeFields";
-import ColorField from "./generic/ColorField";
-import SelectField from "./generic/SelectField";
+import { BuildingObj, SceneObj } from "@/store";
+import NumberField from "../generic/NumberField";
+import GridSizeFields from "../GridSizeFields";
+import { SelectField, ColorField } from "../generic";
 
 interface BuildingPropertiesProps {
   selected: BuildingObj;
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
 }
 
-export default function BuildingProperties({
+export function BuildingProperties({
   selected,
   updateObject,
 }: BuildingPropertiesProps) {
@@ -79,3 +78,5 @@ export default function BuildingProperties({
     </>
   );
 }
+
+export default BuildingProperties;

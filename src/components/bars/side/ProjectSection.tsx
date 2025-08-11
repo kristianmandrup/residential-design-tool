@@ -27,9 +27,15 @@ export default function ProjectSection() {
   };
 
   const fetchProjects = async () => {
-    const response = await fetch("/api/projects");
-    const data = await response.json();
-    setProjects(data);
+    try {
+      const response = await fetch("/api/projects");
+      const data = await response.json();
+      // Ensure data is always an array
+      setProjects(Array.isArray(data) ? data : []);
+    } catch {
+      setProjects([]);
+      console.error("Error fetching projects");
+    }
   };
 
   const saveToDB = async () => {
@@ -50,7 +56,7 @@ export default function ProjectSection() {
       } else {
         alert("Failed to save project");
       }
-    } catch (error) {
+    } catch {
       alert("Error saving project");
     }
   };
@@ -65,7 +71,7 @@ export default function ProjectSection() {
       } else {
         alert("Failed to load project");
       }
-    } catch (error) {
+    } catch {
       alert("Error loading project");
     }
   };
@@ -127,15 +133,19 @@ export default function ProjectSection() {
             Load from DB
           </label>
           <ul className="mt-2 max-h-40 overflow-auto">
-            {projects.map((project) => (
-              <li
-                key={project.id}
-                onClick={() => loadFromDB(project.id)}
-                className="cursor-pointer p-2 rounded-md hover:bg-blue-100"
-              >
-                {project.name}
-              </li>
-            ))}
+            {Array.isArray(projects) && projects.length > 0 ? (
+              projects.map((project) => (
+                <li
+                  key={project.id}
+                  onClick={() => loadFromDB(project.id)}
+                  className="cursor-pointer p-2 rounded-md hover:bg-blue-100"
+                >
+                  {project.name}
+                </li>
+              ))
+            ) : (
+              <li className="text-gray-500 text-sm p-2">No projects found</li>
+            )}
           </ul>
         </div>
       </div>

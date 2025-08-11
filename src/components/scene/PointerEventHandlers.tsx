@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { checkCollision, selectObject } from "./SceneUtils";
-import { useStore } from "@/store/useStore";
 import { SceneObj, ObjType } from "@/store/storeTypes";
 
 type Tool = "select" | "building" | "tree" | "road" | "wall" | "water";
@@ -107,7 +106,7 @@ export function usePointerEventHandlers({
             gridWidth: 1,
             gridDepth: 1,
             gridHeight: 0.1,
-          });
+          } as Partial<SceneObj> & { type: ObjType });
         }
         setTempRoadPoints([]);
         setIsDrawingRoad(false);
@@ -199,7 +198,7 @@ export function usePointerEventHandlers({
           gridDepth: 2,
           gridHeight: 0.1,
         }),
-      };
+      } as Partial<SceneObj> & { type: ObjType };
       addObject(newObject);
       return;
     }

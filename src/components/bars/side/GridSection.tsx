@@ -1,7 +1,6 @@
 import React from "react";
 import { useStore } from "@/store/useStore";
-import { Toggle } from "@radix-ui/react-toggle";
-// import { Toggle } from "@/components/ui/toggle";
+import { SwitchField } from "@/components/bars/side/components/generic";
 import { useGrid } from "@/contexts/GridContext";
 
 export default function GridSection() {
@@ -18,60 +17,13 @@ export default function GridSection() {
         Grid
       </h3>
 
-      {/* Toggle Grid Button */}
-      <Toggle
-        pressed={showGrid}
-        onPressedChange={toggleGrid}
-        className="bg-white shadow-md hover:bg-gray-100 data-[state=on]:bg-blue-500 data-[state=on]:text-white"
-      >
-        Grid
-      </Toggle>
-
-      <div className="text-sm mt-3 text-gray-700 font-medium">
-        Snap:{" "}
-        <span
-          className={`font-bold ${snap ? "text-green-600" : "text-red-600"}`}
-        >
-          {snap ? "On" : "Off"}
-        </span>
-      </div>
-
-      <button
-        onClick={toggleSnap}
-        className={`mt-3 w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-          snap
-            ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
-            : "bg-gradient-to-r from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-gray-700"
-        }`}
-      >
-        {snap ? "Disable Snapping" : "Enable Snapping"}
-      </button>
-
-      <div className="mt-4">
-        <label className="text-sm font-medium text-gray-700 mb-2 block">
-          Grid Size: {gridSize}
-        </label>
-        <input
-          type="range"
-          min="0.5"
-          max="5"
-          step="0.5"
-          value={gridSize}
-          onChange={(e) => setGridSize(Number(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+      <div className="flex items-center gap-4 mb-4">
+        <SwitchField
+          checked={showGrid}
+          onCheckedChange={toggleGrid}
+          label="Grid"
         />
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>0.5</span>
-          <span>1.0</span>
-          <span>1.5</span>
-          <span>2.0</span>
-          <span>2.5</span>
-          <span>3.0</span>
-          <span>3.5</span>
-          <span>4.0</span>
-          <span>4.5</span>
-          <span>5.0</span>
-        </div>
+        <SwitchField checked={snap} onCheckedChange={toggleSnap} label="Snap" />
       </div>
     </section>
   );

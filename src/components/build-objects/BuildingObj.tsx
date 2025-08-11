@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useEffect } from "react";
-import { BuildingObj, useStore, StoreState } from "@/store/useStore";
+import { BuildingObj, useStore, StoreState } from "@/store";
 import * as THREE from "three";
 import Roof from "./RoofObj";
 

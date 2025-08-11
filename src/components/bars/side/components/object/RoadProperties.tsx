@@ -1,15 +1,14 @@
 import React from "react";
-import { RoadObj, SceneObj } from "@/store/useStore";
-import GridSizeFields from "./GridSizeFields";
-import ColorField from "./generic/ColorField";
-import NumberField from "./generic/NumberField";
+import { RoadObj, SceneObj } from "@/store";
+import GridSizeFields from "../GridSizeFields";
+import { ColorField, NumberField } from "../generic";
 
 interface RoadPropertiesProps {
   selected: RoadObj;
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
 }
 
-export default function RoadProperties({
+export function RoadProperties({
   selected,
   updateObject,
 }: RoadPropertiesProps) {
@@ -72,3 +71,5 @@ export default function RoadProperties({
     </>
   );
 }
+
+export default RoadProperties;

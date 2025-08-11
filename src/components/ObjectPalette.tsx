@@ -1,9 +1,8 @@
 "use client";
 import React from "react";
-import { useStore } from "../store/useStore";
+import { useStore, StoreState } from "../store";
 import { useTool } from "../contexts/ToolContext";
 import { PaletteItem } from "./palette";
-import { StoreState } from "@/store/storeTypes";
 
 export default function ObjectPalette() {
   const addObject = useStore((s: StoreState) => s.addObject);

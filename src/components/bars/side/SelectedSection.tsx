@@ -1,220 +1,161 @@
-import * as THREE from "three";
-import { checkCollision, selectObject } from "@/components/scene/SceneUtils";
-import { SceneObj } from "@/store";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from "react";
+import { useStore } from "@/store/useStore";
+import {
+  BuildingObj,
+  RoadObj,
+  SceneObj,
+  TreeObj,
+  WallObj,
+  WaterObj,
+} from "@/store/storeTypes";
+import { BuildingProperties } from "./components/object/BuildingProperties";
+import { RoadProperties } from "./components/object/RoadProperties";
+import { TreeProperties } from "./components/object/TreeProperties";
+import { WallProperties } from "./components/object/WallProperties";
+import { WaterProperties } from "./components/object/WaterProperties";
 
-interface PointerEventHandlersProps {
-  canvas: HTMLCanvasElement;
-  camera: THREE.Camera;
-  scene: THREE.Scene;
-  addObject: (object: unknown) => void;
-  setSelectedId: (id: string | null) => void;
-  removeObject: (id: string) => void;
-  gridSize: number;
-  snap: boolean;
-  objects: SceneObj[];
-  updateObject: (id: string, updates: unknown) => void;
-  selectedTool: string;
-  setSelectedTool: (tool: string) => void;
-  tempRoadPoints: [number, number][];
-  setTempRoadPoints: (points: [number, number][]) => void;
-  setIsDrawingRoad: (isDrawing: boolean) => void;
-  setLastClickTime: (time: number | null) => void;
-  lastClickTime: number | null;
-  selectedId: string | null;
-}
+export default function SelectedSection() {
+  const objects = useStore((s) => s.objects);
+  const selectedId = useStore((s) => s.selectedId);
+  const updateObject = useStore((s) => s.updateObject);
+  const setSelectedId = useStore((s) => s.setSelectedId);
+  const gridSize = useStore((s) => s.gridSize);
+  const [searchQuery, setSearchQuery] = useState("");
 
-export function usePointerEventHandlers({
-  canvas,
-  camera,
-  scene,
-  addObject,
-  setSelectedId,
-  removeObject,
-  gridSize,
-  snap,
-  objects,
-  updateObject,
-  selectedTool,
-  setSelectedTool,
-  tempRoadPoints,
-  setTempRoadPoints,
-  setIsDrawingRoad,
-  setLastClickTime,
-  lastClickTime,
-  selectedId,
-}: PointerEventHandlersProps) {
-  const raycaster = new THREE.Raycaster();
-  const pointer = new THREE.Vector2();
-  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const selectedObject = objects.find((o) => o.id === selectedId);
+  const gridX = selectedObject
+    ? Math.round(selectedObject.position[0] / gridSize)
+    : null;
+  const gridZ = selectedObject
+    ? Math.round(selectedObject.position[2] / gridSize)
+    : null;
 
-  function getIntersection(evt: PointerEvent) {
-    const rect = canvas.getBoundingClientRect();
-    pointer.x = ((evt.clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.y = -((evt.clientY - rect.top) / rect.height) * 2 + 1;
-    raycaster.setFromCamera(pointer, camera);
-    const intersect = new THREE.Vector3();
-    raycaster.ray.intersectPlane(plane, intersect);
-    return intersect;
-  }
+  const filteredObjects = objects.filter(
+    (o: SceneObj) =>
+      o.name &&
+      searchQuery &&
+      o.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  function snapVec(v: THREE.Vector3) {
-    if (!snap) return v;
-    const s = gridSize;
-    v.x = Math.round(v.x / s) * s;
-    v.z = Math.round(v.z / s) * s;
-    v.y = Math.round(v.y / s) * s;
-    return v;
-  }
+  const renderObjectProperties = () => {
+    if (!selectedObject) return null;
 
-  const handleDown = (e: PointerEvent) => {
-    // Double-click detection for finishing road
-    const now = Date.now();
-    const double = lastClickTime && now - lastClickTime < 350;
-
-    const intersect = getIntersection(e);
-    if (!intersect) return;
-    snapVec(intersect);
-
-    if (e.ctrlKey) {
-      setIsDrawingRoad(true);
-      setTempRoadPoints([
-        ...tempRoadPoints,
-        [
-          Math.round(intersect.x * 100) / 100,
-          Math.round(intersect.z * 100) / 100,
-        ] as [number, number],
-      ]);
-      if (double) {
-        const pts = [
-          ...tempRoadPoints,
-          [
-            Math.round(intersect.x * 100) / 100,
-            Math.round(intersect.z * 100) / 100,
-          ],
-        ];
-        if (pts.length >= 2) {
-          addObject({
-            type: "road",
-            name: `Road ${objects.length + 1}`,
-            points: pts as [number, number][],
-            position: [0, 0, 0],
-            rotation: [0, 0, 0],
-            scale: [1, 1, 1],
-            width: 1,
-            gridWidth: 1,
-            gridDepth: 1,
-            gridHeight: 0.1,
-          });
-        }
-        setTempRoadPoints([]);
-        setIsDrawingRoad(false);
-      }
-      setLastClickTime(now);
-      return;
-    }
-
-    if (selectedTool && selectedTool !== "select") {
-      const newPosition: [number, number, number] = [
-        intersect.x,
-        0,
-        intersect.z,
-      ];
-      const newScale: [number, number, number] = [1, 1, 1];
-      const gridWidth =
-        selectedTool === "building"
-          ? 2
-          : selectedTool === "wall"
-          ? 2
-          : selectedTool === "water"
-          ? 2
-          : 1;
-      const gridDepth =
-        selectedTool === "building"
-          ? 2
-          : selectedTool === "wall"
-          ? 1
-          : selectedTool === "water"
-          ? 2
-          : 1;
-
-      if (
-        checkCollision(
-          newPosition,
-          selectedTool,
-          gridWidth,
-          gridDepth,
-          objects,
-          gridSize,
-          snap
-        )
-      ) {
-        return;
-      }
-
-      const newObject = {
-        type: selectedTool,
-        name: `${
-          selectedTool.charAt(0).toUpperCase() + selectedTool.slice(1)
-        } ${objects.length + 1}`,
-        position: newPosition,
-        rotation: [0, 0, 0],
-        scale: newScale,
-        ...(selectedTool === "building" && {
-          floors: 1,
-          color: "#d9d9d9",
-          roofType: "gabled",
-          roofColor: "#666666",
-          gridWidth: 2,
-          gridDepth: 2,
-          gridHeight: 1,
-        }),
-        ...(selectedTool === "tree" && {
-          gridWidth: 1,
-          gridDepth: 1,
-          gridHeight: 1,
-        }),
-        ...(selectedTool === "wall" && {
-          length: 2,
-          height: 1,
-          gridWidth: 2,
-          gridDepth: 1,
-          gridHeight: 1,
-        }),
-        ...(selectedTool === "road" && {
-          points: [
-            [0, 0],
-            [2, 0],
-          ],
-          width: 1,
-          gridWidth: 1,
-          gridDepth: 1,
-          gridHeight: 0.1,
-        }),
-        ...(selectedTool === "water" && {
-          radius: 2,
-          gridWidth: 2,
-          gridDepth: 2,
-          gridHeight: 0.1,
-        }),
-      };
-      addObject(newObject);
-      return;
-    }
-
-    selectObject(e, canvas, camera, scene, setSelectedId);
-
-    if (e.button === 2 && selectedId) {
-      removeObject(selectedId);
-      setSelectedId(null);
+    switch (selectedObject.type) {
+      case "building":
+        return (
+          <BuildingProperties
+            selected={selectedObject as BuildingObj}
+            updateObject={updateObject}
+          />
+        );
+      case "road":
+        return (
+          <RoadProperties
+            selected={selectedObject as RoadObj}
+            updateObject={updateObject}
+          />
+        );
+      case "tree":
+        return (
+          <TreeProperties
+            selected={selectedObject as TreeObj}
+            updateObject={updateObject}
+          />
+        );
+      case "wall":
+        return (
+          <WallProperties
+            selected={selectedObject as WallObj}
+            updateObject={updateObject}
+          />
+        );
+      case "water":
+        return (
+          <WaterProperties
+            selected={selectedObject as WaterObj}
+            updateObject={updateObject}
+          />
+        );
+      default:
+        return (
+          <div className="text-sm text-gray-600">
+            No properties available for {(selectedObject as any).type}
+          </div>
+        );
     }
   };
 
-  const handleContextMenu = (e: Event) => {
-    e.preventDefault();
-  };
-
-  return {
-    handleDown,
-    handleContextMenu,
-  };
+  return (
+    <section className="bg-white rounded-xl border border-gray-200 p-5 shadow-md hover:shadow-lg transition-shadow duration-300">
+      <h3 className="font-bold text-gray-800 mb-4 text-lg flex items-center gap-2">
+        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+        Selected Object
+      </h3>
+      {selectedObject ? (
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Name
+            </label>
+            <input
+              type="text"
+              value={selectedObject.name}
+              onChange={(e) =>
+                updateObject(selectedObject.id, { name: e.target.value })
+              }
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Grid Coordinates
+            </label>
+            <p className="mt-1 text-sm text-gray-600">
+              X: {gridX}, Z: {gridZ}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Type
+            </label>
+            <p className="mt-1 text-sm text-gray-600">{selectedObject.type}</p>
+          </div>
+          <div className="pt-3 border-t border-gray-200">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Properties
+            </label>
+            {renderObjectProperties()}
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-gray-600">No object selected</p>
+      )}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700">
+          Search Objects
+        </label>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by name..."
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+        />
+        <ul className="mt-2 max-h-40 overflow-auto">
+          {filteredObjects.map((obj) => (
+            <li
+              key={obj.id}
+              onClick={() => setSelectedId(obj.id)}
+              className={`cursor-pointer p-2 rounded-md hover:bg-blue-100 ${
+                obj.id === selectedId ? "bg-blue-200" : ""
+              }`}
+            >
+              {obj.name} ({obj.type})
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
 }

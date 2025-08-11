@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const projectList = await db.select().from(projects);
     return NextResponse.json(projectList);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch projects" },
       { status: 500 }
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       .values({ name, data })
       .returning();
     return NextResponse.json(newProject);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to save project" },
       { status: 500 }
@@ -47,7 +47,7 @@ export async function GET_PROJECT(req: NextRequest) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
     return NextResponse.json(project);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch project" },
       { status: 500 }

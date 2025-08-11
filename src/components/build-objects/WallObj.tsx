@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { WallObj } from "@/store/useStore";
+import { WallObj } from "@/store/storeTypes";
 import * as THREE from "three";
 
 export default function Wall({ data }: { data: WallObj }) {
@@ -35,6 +35,11 @@ export default function Wall({ data }: { data: WallObj }) {
       <mesh position={[0, height / 2, 0]}>
         <boxGeometry args={[width, height, 0.12]} />
         <meshStandardMaterial color="#bfbfbf" />
+      </mesh>
+      {/* highlight bounding when selected */}
+      <mesh position={[0, height / 2, 0]}>
+        <boxGeometry args={[width + 0.2, height + 0.2, 0.32]} />
+        <meshBasicMaterial color="yellow" wireframe transparent opacity={0.4} />
       </mesh>
     </group>
   );

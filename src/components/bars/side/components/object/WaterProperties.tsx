@@ -1,15 +1,14 @@
 import React from "react";
-import { WaterObj, SceneObj } from "@/store/useStore";
-import SelectField from "./generic/SelectField";
-import GridSizeFields from "./GridSizeFields";
-import NumberField from "./generic/NumberField";
+import { WaterObj, SceneObj } from "@/store";
+import { NumberField, SelectField } from "../generic";
+import GridSizeFields from "../GridSizeFields";
 
 interface WaterPropertiesProps {
   selected: WaterObj;
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
 }
 
-export default function WaterProperties({
+export function WaterProperties({
   selected,
   updateObject,
 }: WaterPropertiesProps) {
@@ -70,3 +69,5 @@ export default function WaterProperties({
     </>
   );
 }
+
+export default WaterProperties;

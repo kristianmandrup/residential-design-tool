@@ -11,7 +11,6 @@ export interface SceneBase {
   gridWidth?: number;
   gridDepth?: number;
   gridHeight?: number;
-  [key: string]: unknown; // Add index signature for compatibility with SceneObject
 }
 
 export interface BuildingObj extends SceneBase {

@@ -46,7 +46,7 @@ export default function PaletteItem({
       <div
         className={`text-xs font-bold px-3 py-1.5 rounded-full transition-colors duration-200 ${
           isSelected
-            ? "bg-white bg-opacity-20 backdrop-blur-sm text-white"
+            ? "bg-gray-800 text-white"
             : "bg-white bg-opacity-60 backdrop-blur-sm text-gray-700"
         }`}
       >

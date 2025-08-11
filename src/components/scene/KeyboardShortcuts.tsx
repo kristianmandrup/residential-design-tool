@@ -1,6 +1,5 @@
-import { useStore, StoreState } from "../../store/useStore";
+import { useStore, StoreState } from "../../store";
 import { useTool } from "../../contexts/ToolContext";
-import * as THREE from "three";
 
 export function useKeyboardShortcuts() {
   const selectedId = useStore((s: StoreState) => s.selectedId);

@@ -1,14 +1,14 @@
 import React from "react";
-import { WallObj, SceneObj } from "@/store/useStore";
-import GridSizeFields from "./GridSizeFields";
-import NumberField from "./generic/NumberField";
+import { WallObj, SceneObj } from "@/store";
+import GridSizeFields from "../GridSizeFields";
+import { NumberField } from "../generic";
 
 interface WallPropertiesProps {
   selected: WallObj;
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
 }
 
-export default function WallProperties({
+export function WallProperties({
   selected,
   updateObject,
 }: WallPropertiesProps) {
@@ -50,3 +50,5 @@ export default function WallProperties({
     </>
   );
 }
+
+export default WallProperties;
