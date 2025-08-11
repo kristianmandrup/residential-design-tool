@@ -1,7 +1,7 @@
 import React from "react";
 import { RoadObj, SceneObj } from "@/store";
 import GridSizeFields from "../GridSizeFields";
-import { ColorField, NumberField } from "../generic";
+import { ColorField, NumberField } from "../../../../generic";
 
 interface RoadPropertiesProps {
   selected: RoadObj;

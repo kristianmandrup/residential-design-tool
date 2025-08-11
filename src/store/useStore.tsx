@@ -25,6 +25,10 @@ const initialObjects: SceneObj[] = [
     color: "#d9d9d9",
     roofType: "gabled",
     roofColor: "#666666",
+    floorProperties: [
+      { windowsEnabled: true, wallColor: "#d9d9d9" },
+      { windowsEnabled: true, wallColor: "#d9d9d9" },
+    ],
   },
 ]; // start with one building in center
 
@@ -55,6 +59,13 @@ export const useStore = create<StoreState>((set, get) => ({
             color: (obj as Partial<BuildingObj>).color ?? "#d9d9d9",
             roofType: (obj as Partial<BuildingObj>).roofType ?? "gabled",
             roofColor: (obj as Partial<BuildingObj>).roofColor ?? "#666666",
+            floorProperties: Array.from(
+              { length: (obj as Partial<BuildingObj>).floors ?? 1 },
+              (_, i) => ({
+                windowsEnabled: true,
+                wallColor: (obj as Partial<BuildingObj>).color ?? "#d9d9d9",
+              })
+            ),
             gridWidth: (obj as Partial<BuildingObj>).gridWidth ?? 2,
             gridDepth: (obj as Partial<BuildingObj>).gridDepth ?? 2,
             gridHeight: (obj as Partial<BuildingObj>).gridHeight ?? 1,

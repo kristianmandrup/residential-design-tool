@@ -31,7 +31,7 @@ export function SceneWrapper({
       console.log({ width, height });
 
       const right = width - 320;
-      const bottom = height - 40;
+      const bottom = height - 80;
       console.log({ right, bottom });
       setViewportStyle({
         position: "absolute",

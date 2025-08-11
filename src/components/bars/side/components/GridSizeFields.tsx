@@ -1,5 +1,6 @@
 import React from "react";
-import NumberField from "./generic/NumberField";
+import NumberField from "../../../generic/NumberField";
+import SectionHeader from "../../../generic/SectionHeader";
 
 interface GridSizeFieldsProps {
   gridWidth?: number;
@@ -34,8 +35,9 @@ export default function GridSizeFields({
 }: GridSizeFieldsProps) {
   return (
     <>
+      <SectionHeader>Grid Size</SectionHeader>
       <NumberField
-        label="Grid Width (units)"
+        label="Width (units)"
         value={gridWidth}
         onChange={onGridWidthChange}
         min={widthMin}
@@ -43,7 +45,7 @@ export default function GridSizeFields({
         step={2}
       />
       <NumberField
-        label="Grid Depth (units)"
+        label="Depth (units)"
         value={gridDepth}
         onChange={onGridDepthChange}
         min={depthMin}
@@ -53,7 +55,7 @@ export default function GridSizeFields({
       />
       {showHeight && (
         <NumberField
-          label="Grid Height (units)"
+          label="Height (units)"
           value={gridHeight}
           onChange={onGridHeightChange}
           min={heightMin}

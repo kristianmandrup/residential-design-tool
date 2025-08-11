@@ -1,4 +1,4 @@
-export * from "./generic";
+export * from "../../../generic";
 export * from "./object";
 export { default as GridSizeFields } from "./GridSizeFields";
 export { default as PositionInputs } from "./PositionInputs";

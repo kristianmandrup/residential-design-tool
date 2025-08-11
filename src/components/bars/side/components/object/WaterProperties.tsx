@@ -1,6 +1,6 @@
 import React from "react";
 import { WaterObj, SceneObj } from "@/store";
-import { NumberField, SelectField } from "../generic";
+import { NumberField, SelectField } from "../../../../generic";
 import GridSizeFields from "../GridSizeFields";
 
 interface WaterPropertiesProps {

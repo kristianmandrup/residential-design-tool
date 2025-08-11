@@ -5,7 +5,7 @@ import { Sidebar } from "@/components/bars";
 import { EditorProvider } from "@/contexts/EditorContext";
 import { StoreProvider } from "@/store/useStore";
 import { ToolProvider } from "@/contexts/ToolContext";
-import { GridProvider } from "@/contexts/GridContext";
+import { LayoutProvider } from "@/contexts/LayoutContext";
 import { useKeyboardShortcuts } from "@/components/scene/KeyboardShortcuts";
 
 // dynamic import of Scene to avoid SSR issues
@@ -41,18 +41,17 @@ export default function Home() {
     <StoreProvider>
       <EditorProvider>
         <ToolProvider>
-          <GridProvider>
+          <LayoutProvider>
             <div className="flex w-screen h-screen">
               <div className="relative flex-1">
                 <Scene />
               </div>
-
-              <div className="p-4 overflow-auto bg-white border-l w-140">
+              <div className="h-full p-1 overflow-auto bg-white border-l w-160">
                 <Sidebar />
               </div>
             </div>
             <KeyboardHandler />
-          </GridProvider>
+          </LayoutProvider>
         </ToolProvider>
       </EditorProvider>
     </StoreProvider>

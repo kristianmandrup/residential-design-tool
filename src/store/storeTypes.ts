@@ -13,6 +13,11 @@ export interface SceneBase {
   gridHeight?: number;
 }
 
+export interface FloorProperties {
+  windowsEnabled: boolean;
+  wallColor: string;
+}
+
 export interface BuildingObj extends SceneBase {
   type: "building";
   floors: number;
@@ -20,6 +25,7 @@ export interface BuildingObj extends SceneBase {
   roofType: RoofType;
   roofColor: string;
   windowColor?: string;
+  floorProperties: FloorProperties[];
   gridWidth?: number;
   gridDepth?: number;
   gridHeight?: number;

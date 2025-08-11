@@ -1,5 +1,6 @@
 import React from "react";
 import { SceneObj } from "@/store";
+import SectionHeader from "@/components/generic/SectionHeader";
 
 interface RotationInputProps {
   selected: SceneObj;
@@ -15,9 +16,7 @@ export default function RotationInput({
 
   return (
     <div>
-      <label className="text-sm font-medium text-gray-700 mb-2 block">
-        Rotation Y
-      </label>
+      <SectionHeader>Rotation Y</SectionHeader>
       <input
         type="number"
         step="90"
@@ -46,7 +45,7 @@ export default function RotationInput({
           updateObject(selected.id, { rotation: newRotation });
         }}
       />
-      <div className="text-xs text-gray-500 mt-1">
+      <div className="mt-1 text-xs text-gray-500">
         90° increments (0°, 90°, 180°, 270°)
       </div>
     </div>

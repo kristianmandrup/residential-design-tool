@@ -1,4 +1,5 @@
 import React from "react";
+import Label from "./Label";
 
 interface SelectFieldProps {
   label: string;
@@ -17,10 +18,9 @@ export default function SelectField({
 }: SelectFieldProps) {
   return (
     <div className={className}>
-      <label className="text-sm font-medium text-gray-700 mb-2 block">
-        {label}
-      </label>
+      <Label htmlFor={`select-${label.replace(/\s+/g, "-")}`}>{label}</Label>
       <select
+        id={`select-${label.replace(/\s+/g, "-")}`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 font-medium text-gray-700"

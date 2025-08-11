@@ -57,7 +57,26 @@ export default function ObjectPalette() {
     });
   };
 
+  const createWater = () => {
+    addObject({
+      type: "water",
+      position: [0, 0, 0],
+      rotation: [0, 0, 0],
+      scale: [1, 1, 1],
+    });
+  };
+
   const paletteItems = [
+    {
+      id: "select",
+      name: "Select",
+      icon: "👆",
+      shortcut: "S",
+      color: "bg-gray-500",
+      action: () => {
+        setSelectedTool("select");
+      },
+    },
     {
       id: "building",
       name: "Building",
@@ -102,12 +121,23 @@ export default function ObjectPalette() {
         createRoad();
       },
     },
+    {
+      id: "water",
+      name: "Water",
+      icon: "💧",
+      shortcut: "A",
+      color: "bg-blue-500",
+      action: () => {
+        setSelectedTool("water");
+        createWater();
+      },
+    },
   ];
 
   const selectedItem = objects.find((obj) => obj.id === selectedId);
 
   return (
-    <div className="flex flex-col gap-3 m-4 space-y-3">
+    <div className="grid grid-cols-1 gap-3 m-4 sm:grid-cols-2">
       {paletteItems.map((item) => (
         <PaletteItem
           key={item.id}

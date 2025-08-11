@@ -28,6 +28,78 @@ export default function Building({ data }: { data: BuildingObj }) {
   const depth = gridDepth * gridSize;
   const floorH = gridHeight * gridSize;
 
+  // Render windows for all 4 walls
+  const renderWindowsForWall = (
+    floorIndex: number,
+    wall: "front" | "back" | "left" | "right"
+  ) => {
+    const floorProps = data.floorProperties[floorIndex];
+    if (!floorProps?.windowsEnabled) return null;
+
+    const windowWidth = 0.4;
+    const windowHeight = 0.5;
+    const wallWidth = width - 0.4; // Leave some margin
+    const wallDepth = depth - 0.4; // Leave some margin
+
+    // Calculate window positions based on wall
+    const windowPositions: Array<[number, number, number]> = [];
+
+    if (wall === "front" || wall === "back") {
+      // Front and back walls (windows on Z axis)
+      const numWindows = Math.floor(wallWidth / 0.8);
+      const startX = -(numWindows * 0.8) / 2 + 0.4;
+
+      for (let i = 0; i < numWindows; i++) {
+        const x = startX + i * 0.8;
+        const z = wall === "front" ? depth / 2 + 0.01 : -depth / 2 - 0.01;
+        windowPositions.push([x, 0, z]);
+      }
+    } else {
+      // Left and right walls (windows on X axis)
+      const numWindows = Math.floor(wallDepth / 0.8);
+      const startZ = -(numWindows * 0.8) / 2 + 0.4;
+
+      for (let i = 0; i < numWindows; i++) {
+        const x = wall === "right" ? width / 2 + 0.01 : -width / 2 - 0.01;
+        const z = startZ + i * 0.8;
+        windowPositions.push([x, 0, z]);
+      }
+    }
+
+    return windowPositions.map((pos, i) => {
+      // Apply wall rotation to window position
+      const rotatedPos = new THREE.Vector3(pos[0], 0, pos[2]);
+      rotatedPos.applyEuler(new THREE.Euler(0, data.rotation[1], 0));
+
+      // Calculate window rotation based on wall type
+      const windowRotation = [
+        0,
+        wall === "front" || wall === "back"
+          ? data.rotation[1]
+          : data.rotation[1] + Math.PI / 2,
+        0,
+      ] as [number, number, number];
+
+      return (
+        <mesh
+          key={`${wall}-${floorIndex}-${i}`}
+          position={[
+            rotatedPos.x,
+            floorIndex * floorH + floorH / 2,
+            rotatedPos.z,
+          ]}
+          rotation={windowRotation}
+        >
+          <planeGeometry args={[windowWidth, windowHeight]} />
+          <meshStandardMaterial
+            color={data.windowColor || "#bfe9ff"}
+            emissive={data.windowColor || "#bfe9ff"}
+          />
+        </mesh>
+      );
+    });
+  };
+
   return (
     <group
       ref={groupRef}
@@ -35,39 +107,31 @@ export default function Building({ data }: { data: BuildingObj }) {
       rotation={data.rotation}
       scale={data.scale}
     >
-      {Array.from({ length: data.floors }).map((_, i) => (
-        <mesh key={i} position={[0, i * floorH + floorH / 2, 0]} castShadow>
-          <boxGeometry args={[width, floorH, depth]} />
-          <meshStandardMaterial
-            color={data.color}
-            metalness={0.1}
-            roughness={0.8}
-          />
-        </mesh>
-      ))}
+      {Array.from({ length: data.floors }).map((_, floorIndex) => {
+        const floorProps = data.floorProperties[floorIndex];
+        return (
+          <group key={floorIndex}>
+            {/* Floor mesh with individual properties */}
+            <mesh
+              position={[0, floorIndex * floorH + floorH / 2, 0]}
+              castShadow
+            >
+              <boxGeometry args={[width, floorH, depth]} />
+              <meshStandardMaterial
+                color={floorProps?.wallColor || data.color}
+                metalness={0.1}
+                roughness={0.8}
+              />
+            </mesh>
 
-      {/* Windows (simple planes) */}
-      {Array.from({ length: data.floors }).map((_, floor) => (
-        <group
-          key={`win-${floor}`}
-          position={[0, floor * floorH + floorH / 2, depth / 2 + 0.01]}
-        >
-          <mesh position={[-0.65, 0, 0]}>
-            <planeGeometry args={[0.5, 0.6]} />
-            <meshStandardMaterial
-              color={data.windowColor || "#bfe9ff"}
-              emissive={data.windowColor || "#bfe9ff"}
-            />
-          </mesh>
-          <mesh position={[0.65, 0, 0]}>
-            <planeGeometry args={[0.5, 0.6]} />
-            <meshStandardMaterial
-              color={data.windowColor || "#bfe9ff"}
-              emissive={data.windowColor || "#bfe9ff"}
-            />
-          </mesh>
-        </group>
-      ))}
+            {/* Windows for all 4 walls */}
+            {renderWindowsForWall(floorIndex, "front")}
+            {renderWindowsForWall(floorIndex, "back")}
+            {renderWindowsForWall(floorIndex, "left")}
+            {renderWindowsForWall(floorIndex, "right")}
+          </group>
+        );
+      })}
 
       <group position={[0, data.floors * floorH, 0]}>
         <Roof

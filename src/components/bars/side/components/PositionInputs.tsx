@@ -1,6 +1,7 @@
 import React from "react";
-import { SceneObj } from "@/store/useStore";
-import NumberField from "./generic/NumberField";
+import { SceneObj } from "@/store";
+import NumberField from "@/components/generic/NumberField";
+import SectionHeader from "@/components/generic/SectionHeader";
 
 interface PositionInputsProps {
   selected: SceneObj;
@@ -19,9 +20,7 @@ export default function PositionInputs({
 
   return (
     <div>
-      <label className="text-sm font-medium text-gray-700 mb-2 block">
-        Position
-      </label>
+      <SectionHeader>Position</SectionHeader>
       <div className="grid grid-cols-3 gap-2">
         <NumberField
           label="X"

@@ -61,9 +61,15 @@ export function checkCollision(
   const newGridCells: [number, number][] = [];
   const halfWidth = (newGridWidth || 1) / 2;
   const halfDepth = (newGridDepth || 1) / 2;
-  for (let x = -halfWidth; x < halfWidth; x++) {
-    for (let z = -halfDepth; z < halfDepth; z++) {
-      newGridCells.push([Math.round(gridX + x), Math.round(gridZ + z)]);
+  // Use Math.ceil to ensure we capture all grid cells for integer dimensions
+  const startX = Math.floor(gridX - halfWidth + 0.5);
+  const endX = Math.floor(gridX + halfWidth - 0.5);
+  const startZ = Math.floor(gridZ - halfDepth + 0.5);
+  const endZ = Math.floor(gridZ + halfDepth - 0.5);
+
+  for (let x = startX; x <= endX; x++) {
+    for (let z = startZ; z <= endZ; z++) {
+      newGridCells.push([x, z]);
     }
   }
 
@@ -81,9 +87,15 @@ export function checkCollision(
     const objHalfWidth = (obj.gridWidth || 1) / 2;
     const objHalfDepth = (obj.gridDepth || 1) / 2;
     const objGridCells: [number, number][] = [];
-    for (let x = -objHalfWidth; x < objHalfWidth; x++) {
-      for (let z = -objHalfDepth; z < objHalfDepth; z++) {
-        objGridCells.push([Math.round(objGridX + x), Math.round(objGridZ + z)]);
+    // Use the same logic as for the new object
+    const objStartX = Math.floor(objGridX - objHalfWidth + 0.5);
+    const objEndX = Math.floor(objGridX + objHalfWidth - 0.5);
+    const objStartZ = Math.floor(objGridZ - objHalfDepth + 0.5);
+    const objEndZ = Math.floor(objGridZ + objHalfDepth - 0.5);
+
+    for (let x = objStartX; x <= objEndX; x++) {
+      for (let z = objStartZ; z <= objEndZ; z++) {
+        objGridCells.push([x, z]);
       }
     }
 

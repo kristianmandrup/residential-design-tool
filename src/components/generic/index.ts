@@ -1,6 +1,10 @@
 export { default as Button } from "./Button";
 export { default as ColorField } from "./ColorField";
 export { default as DeleteButton } from "./DeleteButton";
+export { default as InputField } from "./InputField";
+export { default as Label } from "./Label";
 export { default as NumberField } from "./NumberField";
+export { default as Section } from "./Section";
+export { default as SectionHeader } from "./SectionHeader";
 export { default as SelectField } from "./SelectField";
 export { SwitchField } from "./SwitchField";
