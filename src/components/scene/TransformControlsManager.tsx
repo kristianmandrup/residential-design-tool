@@ -7,9 +7,11 @@ import { Building, Tree, Wall, Road, Water } from "@/components/build-objects";
 
 export function TransformControlsManager({
   mode,
+  showTransformControls,
 }: {
   mode: "translate" | "rotate" | "scale";
   setMode: (m: "translate" | "rotate" | "scale") => void;
+  showTransformControls: boolean;
 }) {
   const selectedId = useStore((s: StoreState) => s.selectedId);
   const objects = useStore((s: StoreState) => s.objects);
@@ -80,7 +82,7 @@ export function TransformControlsManager({
     };
   }, [selectedId, updateObject, gridSize, snap, camera, gl, objects]);
 
-  if (!selected) return null;
+  if (!selected || !showTransformControls) return null;
 
   // Create a wrapper that applies the selected object's transform
   const ObjectWrapper: React.FC<{ data: SceneObj }> = ({ data }) => {

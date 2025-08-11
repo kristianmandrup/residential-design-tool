@@ -23,6 +23,8 @@ export function SceneWrapper({
 }: SceneWrapperProps) {
   const { showGrid } = useGrid();
   const [viewportStyle, setViewportStyle] = React.useState({});
+  const [showTransformControls, setShowTransformControls] =
+    React.useState(true);
 
   React.useEffect(() => {
     const updateViewportStyle = () => {
@@ -56,21 +58,21 @@ export function SceneWrapper({
       <Ground />
       <SceneObjects />
       <SelectionAndPlacement />
-
+      <OrbitControls makeDefault />
+      <TransformControlsManager
+        mode={transformMode}
+        setMode={setTransformMode}
+        showTransformControls={showTransformControls}
+      />
       <Html>
         <TransformModeUI
           mode={transformMode}
           setMode={setTransformMode}
+          showTransformControls={showTransformControls}
+          setShowTransformControls={setShowTransformControls}
           style={viewportStyle}
         />
       </Html>
-
-      <TransformControlsManager
-        mode={transformMode}
-        setMode={setTransformMode}
-      />
-
-      <OrbitControls makeDefault />
     </>
   );
 }

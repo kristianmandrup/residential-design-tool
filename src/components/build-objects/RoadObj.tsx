@@ -1,11 +1,13 @@
 "use client";
 import React, { useEffect, useMemo, useRef } from "react";
 import { RoadObj } from "@/store";
+import { useStore, StoreState } from "@/store";
 import * as THREE from "three";
 import { RoadBase, RoadCurb, RoadDetail, RoadLines } from "./road";
 
 export default function Road({ data }: { data: RoadObj }) {
   const g = useRef<THREE.Group | null>(null);
+  const selectedId = useStore((s: StoreState) => s.selectedId);
 
   useEffect(() => {
     if (!g.current) return;
@@ -18,7 +20,7 @@ export default function Road({ data }: { data: RoadObj }) {
 
   // Use grid dimensions if available, otherwise use defaults
   const gridWidth = data.gridWidth || 1; // Default 1 grid unit width
-  const gridDepth = data.gridDepth || 1; // Default 1 grid unit depth
+  // const gridDepth = data.gridDepth || 1; // Default 1 grid unit depth
   const gridHeight = data.gridHeight || 0.1; // Default 0.1 grid unit height
 
   // Convert grid units to actual world units (1 grid unit = 1.0 world unit)
@@ -48,8 +50,26 @@ export default function Road({ data }: { data: RoadObj }) {
     return segs;
   }, [data.points]);
 
+  // Convert direction to rotation if direction is provided
+  const rotation: [number, number, number] =
+    data.direction !== undefined
+      ? [0, (data.direction * Math.PI) / 180, 0]
+      : data.rotation;
+
   return (
-    <group ref={g} position={data.position} rotation={data.rotation}>
+    <group ref={g} position={data.position} rotation={rotation}>
+      {/* highlight bounding when selected */}
+      {selectedId === data.id && (
+        <mesh position={[0, 0.1, 0]}>
+          <boxGeometry args={[20, 0.2, 20]} />
+          <meshBasicMaterial
+            color="yellow"
+            wireframe
+            transparent
+            opacity={0.4}
+          />
+        </mesh>
+      )}
       {/* Road base - asphalt surface */}
       {segments.map((s, idx) => (
         <RoadBase

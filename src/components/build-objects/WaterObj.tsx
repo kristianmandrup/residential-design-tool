@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import * as THREE from "three";
 import { WaterObj } from "@/store/storeTypes";
+import { useStore, StoreState } from "@/store";
 
 interface WaterProps {
   data: WaterObj;
@@ -8,6 +9,7 @@ interface WaterProps {
 
 export default function Water({ data }: WaterProps) {
   const groupRef = React.useRef<THREE.Group>(null);
+  const selectedId = useStore((s: StoreState) => s.selectedId);
 
   React.useEffect(() => {
     if (!groupRef.current) return;
@@ -30,16 +32,33 @@ export default function Water({ data }: WaterProps) {
   const height = gridHeight * gridSize;
 
   const shape = data.shape || "circular";
-  const direction = data.direction || 0;
+
+  // Convert direction to rotation if direction is provided
+  const rotation: [number, number, number] =
+    data.direction !== undefined
+      ? [0, (data.direction * Math.PI) / 180, 0]
+      : data.rotation;
 
   if (shape === "rectangular") {
     return (
       <group
         ref={groupRef}
         position={data.position}
-        rotation={[0, direction, 0]}
+        rotation={rotation}
         scale={[width, height, depth]}
       >
+        {/* highlight bounding when selected */}
+        {selectedId === data.id && (
+          <mesh position={[0, height / 2, 0]}>
+            <boxGeometry args={[width + 0.2, height + 0.2, depth + 0.2]} />
+            <meshBasicMaterial
+              color="yellow"
+              wireframe
+              transparent
+              opacity={0.4}
+            />
+          </mesh>
+        )}
         <mesh>
           <boxGeometry args={[width, height, depth]} />
           <meshStandardMaterial color="#4FC3F7" transparent opacity={0.8} />
@@ -55,9 +74,23 @@ export default function Water({ data }: WaterProps) {
     <group
       ref={groupRef}
       position={data.position}
-      rotation={data.rotation}
+      rotation={rotation}
       scale={[width, height, depth]}
     >
+      {/* highlight bounding when selected */}
+      {selectedId === data.id && (
+        <mesh position={[0, height / 2, 0]}>
+          <boxGeometry
+            args={[radius * 2 + 0.2, height + 0.2, radius * 2 + 0.2]}
+          />
+          <meshBasicMaterial
+            color="yellow"
+            wireframe
+            transparent
+            opacity={0.4}
+          />
+        </mesh>
+      )}
       <mesh>
         <cylinderGeometry args={[radius, radius, height, 32]} />
         <meshStandardMaterial color="#4FC3F7" transparent opacity={0.8} />

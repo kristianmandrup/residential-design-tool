@@ -11,6 +11,7 @@ export function SelectionAndPlacement() {
   const addObject = useStore((s: StoreState) => s.addObject);
   const selectedId = useStore((s: StoreState) => s.selectedId);
   const setSelectedId = useStore((s: StoreState) => s.setSelectedId);
+  const setSelectedIds = useStore((s: StoreState) => s.setSelectedIds);
   const updateObject = useStore((s: StoreState) => s.updateObject);
   const removeObject = useStore((s: StoreState) => s.removeObject);
   const gridSize = useStore((s: StoreState) => s.gridSize);
@@ -33,6 +34,7 @@ export function SelectionAndPlacement() {
     scene,
     addObject,
     setSelectedId,
+    setSelectedIds,
     removeObject,
     gridSize,
     snap,
@@ -46,6 +48,7 @@ export function SelectionAndPlacement() {
     setLastClickTime,
     lastClickTime,
     selectedId,
+    selectedIds: useStore((s: StoreState) => s.selectedIds),
   });
 
   // Highlight selected object

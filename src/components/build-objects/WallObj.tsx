@@ -1,10 +1,12 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { WallObj } from "@/store/storeTypes";
+import { useStore, StoreState } from "@/store";
 import * as THREE from "three";
 
 export default function Wall({ data }: { data: WallObj }) {
   const g = useRef<THREE.Group | null>(null);
+  const selectedId = useStore((s: StoreState) => s.selectedId);
   useEffect(() => {
     if (!g.current) return;
     g.current.traverse((c) => {
@@ -25,11 +27,17 @@ export default function Wall({ data }: { data: WallObj }) {
   const depth = gridDepth * gridSize;
   const height = gridHeight * gridSize;
 
+  // Convert direction to rotation if direction is provided
+  const rotation: [number, number, number] =
+    data.direction !== undefined
+      ? [0, (data.direction * Math.PI) / 180, 0]
+      : data.rotation;
+
   return (
     <group
       ref={g}
       position={data.position}
-      rotation={data.rotation}
+      rotation={rotation}
       scale={[width, height, depth]}
     >
       <mesh position={[0, height / 2, 0]}>
@@ -37,10 +45,17 @@ export default function Wall({ data }: { data: WallObj }) {
         <meshStandardMaterial color="#bfbfbf" />
       </mesh>
       {/* highlight bounding when selected */}
-      <mesh position={[0, height / 2, 0]}>
-        <boxGeometry args={[width + 0.2, height + 0.2, 0.32]} />
-        <meshBasicMaterial color="yellow" wireframe transparent opacity={0.4} />
-      </mesh>
+      {selectedId === data.id && (
+        <mesh position={[0, height / 2, 0]}>
+          <boxGeometry args={[width + 0.2, height + 0.2, 0.32]} />
+          <meshBasicMaterial
+            color="yellow"
+            wireframe
+            transparent
+            opacity={0.4}
+          />
+        </mesh>
+      )}
     </group>
   );
 }

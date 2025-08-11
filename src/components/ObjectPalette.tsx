@@ -1,12 +1,9 @@
 "use client";
 import React from "react";
-import { useStore, StoreState } from "../store";
 import { useTool } from "../contexts/ToolContext";
 import { PaletteItem } from "./palette";
 
 export default function ObjectPalette() {
-  const selectedId = useStore((s: StoreState) => s.selectedId);
-  const objects = useStore((s: StoreState) => s.objects);
   const { selectedTool, setSelectedTool } = useTool();
 
   const paletteItems = [
@@ -72,7 +69,7 @@ export default function ObjectPalette() {
     },
   ];
 
-  const selectedItem = objects.find((obj) => obj.id === selectedId);
+  // const selectedItem = objects.find((obj) => obj.id === selectedId);
 
   return (
     <div className="grid grid-cols-1 gap-3 m-4 sm:grid-cols-2">
@@ -85,9 +82,7 @@ export default function ObjectPalette() {
           shortcut={item.shortcut}
           color={item.color}
           action={item.action}
-          isSelected={
-            selectedTool === item.id || selectedItem?.type === item.id
-          }
+          isSelected={selectedTool === item.id}
         />
       ))}
     </div>

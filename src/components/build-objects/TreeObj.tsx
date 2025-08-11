@@ -1,10 +1,12 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { TreeObj } from "@/store/storeTypes";
+import { useStore, StoreState } from "@/store";
 import * as THREE from "three";
 
 export default function Tree({ data }: { data: TreeObj }) {
   const groupRef = useRef<THREE.Group | null>(null);
+  const selectedId = useStore((s: StoreState) => s.selectedId);
 
   useEffect(() => {
     if (!groupRef.current) return;
@@ -42,10 +44,17 @@ export default function Tree({ data }: { data: TreeObj }) {
         <meshStandardMaterial color={data.foliageColor ?? "#2E8B57"} />
       </mesh>
       {/* highlight bounding when selected */}
-      <mesh position={[0, height * 0.5, 0]}>
-        <boxGeometry args={[width + 0.3, height + 0.3, depth + 0.3]} />
-        <meshBasicMaterial color="yellow" wireframe transparent opacity={0.4} />
-      </mesh>
+      {selectedId === data.id && (
+        <mesh position={[0, height * 0.5, 0]}>
+          <boxGeometry args={[width + 0.3, height + 0.3, depth + 0.3]} />
+          <meshBasicMaterial
+            color="yellow"
+            wireframe
+            transparent
+            opacity={0.4}
+          />
+        </mesh>
+      )}
     </group>
   );
 }
