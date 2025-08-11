@@ -15,7 +15,7 @@ export default function RoadBase({
   angle,
   width,
   height = 0.05,
-  color = "#808080",
+  color,
 }: RoadBaseProps) {
   return (
     <mesh position={pos} rotation={[0, angle, 0]}>

@@ -5,66 +5,9 @@ import { useTool } from "../contexts/ToolContext";
 import { PaletteItem } from "./palette";
 
 export default function ObjectPalette() {
-  const addObject = useStore((s: StoreState) => s.addObject);
   const selectedId = useStore((s: StoreState) => s.selectedId);
   const objects = useStore((s: StoreState) => s.objects);
   const { selectedTool, setSelectedTool } = useTool();
-
-  const createBuilding = () => {
-    addObject({
-      type: "building",
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-      scale: [1, 1, 1],
-      floors: 2,
-      color: "#d9d9d9",
-      roofType: "gabled",
-      roofColor: "#666666",
-    });
-  };
-
-  const createTree = () => {
-    addObject({
-      type: "tree",
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-      scale: [1, 1, 1],
-    });
-  };
-
-  const createWall = () => {
-    addObject({
-      type: "wall",
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-      scale: [1, 1, 1],
-      length: 3,
-      height: 1,
-    });
-  };
-
-  const createRoad = () => {
-    addObject({
-      type: "road",
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-      scale: [1, 1, 1],
-      points: [
-        [0, 0],
-        [2, 0],
-      ],
-      width: 1,
-    });
-  };
-
-  const createWater = () => {
-    addObject({
-      type: "water",
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-      scale: [1, 1, 1],
-    });
-  };
 
   const paletteItems = [
     {
@@ -85,7 +28,6 @@ export default function ObjectPalette() {
       color: "bg-blue-600",
       action: () => {
         setSelectedTool("building");
-        createBuilding();
       },
     },
     {
@@ -96,7 +38,6 @@ export default function ObjectPalette() {
       color: "bg-green-500",
       action: () => {
         setSelectedTool("tree");
-        createTree();
       },
     },
     {
@@ -107,7 +48,6 @@ export default function ObjectPalette() {
       color: "bg-yellow-500",
       action: () => {
         setSelectedTool("wall");
-        createWall();
       },
     },
     {
@@ -118,7 +58,6 @@ export default function ObjectPalette() {
       color: "bg-gray-700",
       action: () => {
         setSelectedTool("road");
-        createRoad();
       },
     },
     {
@@ -129,7 +68,6 @@ export default function ObjectPalette() {
       color: "bg-blue-500",
       action: () => {
         setSelectedTool("water");
-        createWater();
       },
     },
   ];

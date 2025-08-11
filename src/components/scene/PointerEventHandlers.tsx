@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { checkCollision, selectObject } from "./SceneUtils";
+import { checkCollision, selectObject, SceneObject } from "./SceneUtils";
 import { SceneObj, ObjType } from "@/store/storeTypes";
 
 type Tool = "select" | "building" | "tree" | "road" | "wall" | "water";
@@ -10,6 +10,7 @@ interface PointerEventHandlersProps {
   scene: THREE.Scene;
   addObject: (object: Partial<SceneObj> & { type: ObjType }) => void;
   setSelectedId: (id: string | null) => void;
+  setSelectedIds: (ids: string[]) => void;
   removeObject: (id: string) => void;
   gridSize: number;
   snap: boolean;
@@ -23,6 +24,7 @@ interface PointerEventHandlersProps {
   setLastClickTime: (time: number | null) => void;
   lastClickTime: number | null;
   selectedId: string | null;
+  selectedIds: string[];
 }
 
 export function usePointerEventHandlers({
@@ -31,6 +33,7 @@ export function usePointerEventHandlers({
   scene,
   addObject,
   setSelectedId,
+  setSelectedIds,
   removeObject,
   gridSize,
   snap,
@@ -44,6 +47,7 @@ export function usePointerEventHandlers({
   setLastClickTime,
   lastClickTime,
   selectedId,
+  selectedIds,
 }: PointerEventHandlersProps) {
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
@@ -145,7 +149,7 @@ export function usePointerEventHandlers({
           selectedTool,
           gridWidth,
           gridDepth,
-          objects,
+          objects as unknown as SceneObject[],
           gridSize,
           snap
         )
@@ -203,7 +207,16 @@ export function usePointerEventHandlers({
       return;
     }
 
-    selectObject(e, canvas, camera, scene, setSelectedId);
+    selectObject(
+      e,
+      canvas,
+      camera,
+      scene,
+      setSelectedId,
+      setSelectedIds,
+      selectedIds,
+      e.shiftKey
+    );
 
     if (e.button === 2 && selectedId) {
       removeObject(selectedId);

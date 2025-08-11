@@ -117,7 +117,10 @@ export function selectObject(
   canvas: HTMLCanvasElement,
   camera: THREE.Camera,
   scene: THREE.Scene,
-  setSelectedId: (id: string | null) => void
+  setSelectedId: (id: string | null) => void,
+  setSelectedIds: (ids: string[]) => void,
+  selectedIds: string[],
+  shiftPressed: boolean = evt.shiftKey
 ): void {
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
@@ -158,11 +161,26 @@ export function selectObject(
         ?.objectId
     ) {
       const id = selectedObject.userData.objectId as string;
-      setSelectedId(id);
+
+      if (shiftPressed) {
+        // Multi-selection with shift key
+        if (selectedIds.includes(id)) {
+          // Remove from selection if already selected
+          setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
+        } else {
+          // Add to selection
+          setSelectedIds([...selectedIds, id]);
+        }
+      } else {
+        // Single selection - clear previous selection and select new item
+        setSelectedIds([id]);
+      }
       return;
     }
   }
 
-  // nothing selected -> deselect
-  setSelectedId(null);
+  // Clicked on empty space - clear selection unless shift is pressed
+  if (!shiftPressed) {
+    setSelectedIds([]);
+  }
 }

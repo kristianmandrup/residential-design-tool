@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useRef } from "react";
-import { RoadObj } from "@/store/useStore";
+import { RoadObj } from "@/store";
 import * as THREE from "three";
 import { RoadBase, RoadCurb, RoadDetail, RoadLines } from "./road";
 
@@ -65,7 +65,7 @@ export default function Road({ data }: { data: RoadObj }) {
 
       {/* Road edges/curbs */}
       {segments.map((s, idx) => (
-        <>
+        <React.Fragment key={`curb-${idx}`}>
           <RoadCurb
             key={`curb-left-${idx}`}
             pos={s.pos}
@@ -82,7 +82,7 @@ export default function Road({ data }: { data: RoadObj }) {
             width={width}
             side="right"
           />
-        </>
+        </React.Fragment>
       ))}
 
       {/* Lane markings - dashed center lines */}

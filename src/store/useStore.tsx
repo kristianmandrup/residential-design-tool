@@ -35,6 +35,7 @@ const initialObjects: SceneObj[] = [
 export const useStore = create<StoreState>((set, get) => ({
   objects: initialObjects,
   selectedId: null,
+  selectedIds: [],
   gridSize: 1,
   snapEnabled: true,
   past: [],
@@ -138,6 +139,7 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   setSelectedId: (id) => set(() => ({ selectedId: id })),
+  setSelectedIds: (ids) => set(() => ({ selectedIds: ids })),
 
   setGridSize: (n) => set(() => ({ gridSize: n })),
 

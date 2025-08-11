@@ -1,4 +1,6 @@
 import React from "react";
+import DashedLine from "./DashedLine";
+import SideLane from "./SideLane";
 
 export interface RoadLinesProps {
   pos: [number, number, number];
@@ -6,6 +8,8 @@ export interface RoadLinesProps {
   angle: number;
   width: number;
   segments: number;
+  centerLineColor?: string;
+  sideLineColor?: string;
 }
 
 export default function RoadLines({
@@ -14,36 +18,31 @@ export default function RoadLines({
   angle,
   width,
   segments,
+  centerLineColor = "#ffffff",
+  sideLineColor = "#ffffff",
 }: RoadLinesProps) {
   return (
     <React.Fragment>
       {/* Center dashed line - shorter for better dash effect */}
       {segments > 1 && (
-        <mesh position={[pos[0], 0.02, pos[2]]} rotation={[0, angle, 0]}>
-          <boxGeometry args={[len * 0.8, 0.005, 0.06]} />
-          <meshStandardMaterial
-            color="#ffffff"
-            roughness={0.7}
-            metalness={0.1}
-          />
-        </mesh>
+        <DashedLine pos={pos} len={len} angle={angle} color={centerLineColor} />
       )}
 
-      {/* Side lane markings - fixed width regardless of road width */}
-      <mesh
-        position={[pos[0], 0.02, pos[2] - width / 4]}
-        rotation={[0, angle, 0]}
-      >
-        <boxGeometry args={[len * 0.85, 0.005, 0.06]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} metalness={0.1} />
-      </mesh>
-      <mesh
-        position={[pos[0], 0.02, pos[2] + width / 4]}
-        rotation={[0, angle, 0]}
-      >
-        <boxGeometry args={[len * 0.85, 0.005, 0.06]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.7} metalness={0.1} />
-      </mesh>
+      {/* Side lane markings - positioned at 1/4 and 3/4 of road width */}
+      <SideLane
+        pos={pos}
+        len={len}
+        angle={angle}
+        offset={-width / 4}
+        color={sideLineColor}
+      />
+      <SideLane
+        pos={pos}
+        len={len}
+        angle={angle}
+        offset={width / 4}
+        color={sideLineColor}
+      />
     </React.Fragment>
   );
 }

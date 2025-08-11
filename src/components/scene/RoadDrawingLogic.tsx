@@ -1,5 +1,3 @@
-import { useStore, StoreState } from "../../store/useStore";
-
 export interface RoadDrawingState {
   isDrawingRoad: boolean;
   tempRoadPoints: [number, number][];
@@ -50,6 +48,9 @@ export function useRoadDrawingLogic(
           rotation: [0, 0, 0],
           scale: [1, 1, 1],
           width: 1,
+          gridWidth: 1,
+          gridDepth: 1,
+          gridHeight: 0.1,
         });
       }
       setTempRoadPoints([]);

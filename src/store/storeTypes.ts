@@ -81,6 +81,7 @@ export type Snapshot = {
 export interface StoreState {
   objects: SceneObj[];
   selectedId: string | null;
+  selectedIds: string[];
   gridSize: number;
   snapEnabled: boolean;
   past: Snapshot[];
@@ -89,6 +90,7 @@ export interface StoreState {
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
   removeObject: (id: string) => void;
   setSelectedId: (id: string | null) => void;
+  setSelectedIds: (ids: string[]) => void;
   setGridSize: (s: number) => void;
   toggleSnap: () => void;
   saveSnapshot: () => void;

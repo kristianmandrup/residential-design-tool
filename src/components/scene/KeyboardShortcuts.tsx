@@ -4,16 +4,28 @@ import { useTool } from "../../contexts/ToolContext";
 export function useKeyboardShortcuts() {
   const selectedId = useStore((s: StoreState) => s.selectedId);
   const setSelectedId = useStore((s: StoreState) => s.setSelectedId);
+  const selectedIds = useStore((s: StoreState) => s.selectedIds);
+  const setSelectedIds = useStore((s: StoreState) => s.setSelectedIds);
   const removeObject = useStore((s: StoreState) => s.removeObject);
   const objects = useStore((s: StoreState) => s.objects);
   const updateObject = useStore((s: StoreState) => s.updateObject);
   const { selectedTool, setSelectedTool } = useTool();
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    // Delete key - remove selected object
-    if (e.key === "Delete" && selectedId) {
-      removeObject(selectedId);
-      setSelectedId(null);
+    // Delete key - remove selected objects
+    if (e.key === "Delete" && (selectedId || selectedIds.length > 0)) {
+      if (selectedIds.length > 0) {
+        // Multi-delete
+        selectedIds.forEach((id: string) => {
+          removeObject(id);
+        });
+        setSelectedIds([]);
+        setSelectedId(null);
+      } else if (selectedId) {
+        // Single delete
+        removeObject(selectedId);
+        setSelectedId(null);
+      }
     }
 
     // Escape key - go to Select mode
