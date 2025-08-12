@@ -2,6 +2,7 @@ import React from "react";
 import { WallObj, SceneObj } from "@/store";
 import GridSizeFields from "../GridSizeFields";
 import { NumberField } from "../../../../generic";
+import PositionInputs from "../PositionInputs";
 
 interface WallPropertiesProps {
   selected: WallObj;
@@ -14,6 +15,7 @@ export function WallProperties({
 }: WallPropertiesProps) {
   return (
     <>
+      <PositionInputs selected={selected} updateObject={updateObject} />
       <GridSizeFields
         gridWidth={selected.gridWidth || 2}
         gridDepth={selected.gridDepth || 1}

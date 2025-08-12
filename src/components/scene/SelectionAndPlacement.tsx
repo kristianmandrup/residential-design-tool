@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useThree } from "@react-three/fiber";
 import { useStore, StoreState } from "@/store";
 import { useTool } from "@/contexts/ToolContext";
@@ -27,8 +27,14 @@ export function SelectionAndPlacement() {
   // Keyboard shortcuts
   const { handleKeyDown } = useKeyboardShortcuts();
 
+  // Create stable event handlers
+  const handleKeyDownCallback = useCallback(handleKeyDown, [handleKeyDown]);
+  const handleContextMenuCallback = useCallback((e: Event) => {
+    e.preventDefault();
+  }, []);
+
   // Pointer event handlers
-  const { handleDown, handleContextMenu } = usePointerEventHandlers({
+  const { handleDown } = usePointerEventHandlers({
     canvas: gl.domElement,
     camera,
     scene,
@@ -76,34 +82,15 @@ export function SelectionAndPlacement() {
     const canvas = gl.domElement;
     if (!canvas) return;
 
-    canvas.addEventListener("keydown", handleKeyDown);
-    canvas.addEventListener("contextmenu", handleContextMenu);
+    canvas.addEventListener("keydown", handleKeyDownCallback);
+    canvas.addEventListener("contextmenu", handleContextMenuCallback);
     canvas.addEventListener("pointerdown", handleDown);
     return () => {
-      canvas.removeEventListener("keydown", handleKeyDown);
-      canvas.removeEventListener("contextmenu", handleContextMenu);
+      canvas.removeEventListener("keydown", handleKeyDownCallback);
+      canvas.removeEventListener("contextmenu", handleContextMenuCallback);
       canvas.removeEventListener("pointerdown", handleDown);
     };
-  }, [
-    gl,
-    camera,
-    scene,
-    addObject,
-    setSelectedId,
-    lastClickTime,
-    tempRoadPoints,
-    gridSize,
-    snap,
-    selectedId,
-    removeObject,
-    objects,
-    updateObject,
-    selectedTool,
-    setSelectedTool,
-    handleKeyDown,
-    handleContextMenu,
-    handleDown,
-  ]);
+  }, [gl, handleKeyDownCallback, handleContextMenuCallback, handleDown]);
 
   return null;
 }

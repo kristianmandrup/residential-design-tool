@@ -2,6 +2,7 @@ import React from "react";
 import { RoadObj, SceneObj } from "@/store";
 import GridSizeFields from "../GridSizeFields";
 import { ColorField, NumberField } from "../../../../generic";
+import PositionInputs from "../PositionInputs";
 
 interface RoadPropertiesProps {
   selected: RoadObj;
@@ -14,6 +15,7 @@ export function RoadProperties({
 }: RoadPropertiesProps) {
   return (
     <>
+      <PositionInputs selected={selected} updateObject={updateObject} />
       <GridSizeFields
         gridWidth={selected.gridWidth || 1}
         gridDepth={selected.gridDepth || 1}
@@ -61,9 +63,9 @@ export function RoadProperties({
         className="mt-3"
       />
 
-      <div className="text-xs text-gray-600 mt-3 bg-gradient-to-r from-gray-50 to-gray-100 p-3 rounded-lg border border-gray-200">
+      <div className="p-3 mt-3 text-xs text-gray-600 border border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100">
         Road has{" "}
-        <strong className="text-gray-800 font-semibold">
+        <strong className="font-semibold text-gray-800">
           {selected.points?.length || 0}
         </strong>{" "}
         points (multi-segment)

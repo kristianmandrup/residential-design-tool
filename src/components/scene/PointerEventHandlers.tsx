@@ -38,9 +38,7 @@ export function usePointerEventHandlers({
   gridSize,
   snap,
   objects,
-  updateObject,
   selectedTool,
-  setSelectedTool,
   tempRoadPoints,
   setTempRoadPoints,
   setIsDrawingRoad,
@@ -218,18 +216,14 @@ export function usePointerEventHandlers({
       e.shiftKey
     );
 
-    if (e.button === 2 && selectedId) {
-      removeObject(selectedId);
-      setSelectedId(null);
-    }
-  };
-
-  const handleContextMenu = (e: Event) => {
-    e.preventDefault();
+    // right click to delete
+    // if (e.button === 2 && selectedId) {
+    //   removeObject(selectedId);
+    //   setSelectedId(null);
+    // }
   };
 
   return {
     handleDown,
-    handleContextMenu,
   };
 }

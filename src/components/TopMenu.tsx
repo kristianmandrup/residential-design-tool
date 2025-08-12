@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useStore } from "@/store/useStore";
-import { downloadJSON, readJSONFile } from "@/utils/io";
-import { SceneObj, StoreState } from "@/store/storeTypes";
 import SearchSection from "@/components/bars/side/SearchSection";
 import GridSection from "@/components/bars/side/GridSection";
-import Modal from "@/components/ui/Modal";
 import ProjectSection from "@/components/bars/side/ProjectSection";
 import Button from "@/components/generic/Button";
 
 export default function TopMenu() {
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Store state for undo/redo
+  const { past, future, undo, redo } = useStore();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -30,6 +30,30 @@ export default function TopMenu() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Keyboard shortcuts for undo/redo
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      // Ctrl+Z or Cmd+Z for undo
+      if ((event.ctrlKey || event.metaKey) && event.key === "z") {
+        event.preventDefault();
+        undo();
+      }
+      // Ctrl+Y or Cmd+Y for redo
+      else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
+        event.preventDefault();
+        redo();
+      }
+    },
+    [undo, redo]
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <nav className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200">
@@ -73,6 +97,52 @@ export default function TopMenu() {
       </div>
 
       <div className="flex items-center space-x-4">
+        <Button
+          onClick={undo}
+          disabled={past.length === 0}
+          variant="ghost"
+          size="md"
+          className="flex items-center gap-2"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+            />
+          </svg>
+          Undo
+        </Button>
+
+        <Button
+          onClick={redo}
+          disabled={future.length === 0}
+          variant="ghost"
+          size="md"
+          className="flex items-center gap-2"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"
+            />
+          </svg>
+          Redo
+        </Button>
+
         <SearchSection />
         <GridSection />
       </div>

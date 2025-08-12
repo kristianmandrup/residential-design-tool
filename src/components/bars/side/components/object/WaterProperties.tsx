@@ -2,6 +2,7 @@ import React from "react";
 import { WaterObj, SceneObj } from "@/store";
 import { NumberField, SelectField } from "../../../../generic";
 import GridSizeFields from "../GridSizeFields";
+import PositionInputs from "../PositionInputs";
 
 interface WaterPropertiesProps {
   selected: WaterObj;
@@ -14,6 +15,7 @@ export function WaterProperties({
 }: WaterPropertiesProps) {
   return (
     <>
+      <PositionInputs selected={selected} updateObject={updateObject} />
       <SelectField
         label="Shape"
         value={selected.shape || "circular"}

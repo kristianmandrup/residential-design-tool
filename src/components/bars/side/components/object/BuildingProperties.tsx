@@ -4,6 +4,7 @@ import NumberField from "../../../../generic/NumberField";
 import GridSizeFields from "../GridSizeFields";
 import { SelectField, ColorField } from "../../../../generic";
 import { FloorProperties } from "./FloorProperties";
+import PositionInputs from "../PositionInputs";
 import CollapsibleSection from "../../CollapsibleSection";
 
 interface BuildingPropertiesProps {
@@ -63,6 +64,7 @@ export function BuildingProperties({
             max={10}
           />
 
+          <PositionInputs selected={selected} updateObject={updateObject} />
           <GridSizeFields
             gridWidth={selected.gridWidth || 2}
             gridDepth={selected.gridDepth || 2}

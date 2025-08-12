@@ -25,7 +25,7 @@ export default function SelectedSection() {
         <div>
           <InputField
             label="Name"
-            value={selectedObject.name}
+            value={selectedObject.name || ""}
             onChange={(value) =>
               updateObject(selectedObject.id, { name: value })
             }
