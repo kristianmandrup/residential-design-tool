@@ -17,10 +17,10 @@ export default function CollapsibleSection({
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   return (
-    <section className="p-1 transition-shadow duration-300 bg-white border border-gray-200 shadow-md rounded-xl hover:shadow-lg">
+    <section className="pl-2 pr-2 transition-shadow duration-300 bg-white border border-gray-200 shadow-md rounded-xl hover:shadow-lg">
       <Button
         variant="ghost"
-        className="flex items-center justify-between w-full mb-4 text-lg font-bold text-gray-800"
+        className="flex items-center justify-between w-full mb-1 text-lg font-bold text-gray-800"
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-2">

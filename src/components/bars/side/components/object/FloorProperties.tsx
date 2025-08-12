@@ -45,7 +45,7 @@ export function FloorProperties({
       defaultCollapsed={true}
       icon={<span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>}
     >
-      <div className="space-y-4">
+      <div className="space-y-2">
         <InputField
           label="Floor name"
           value={floorProperties.name || ""}

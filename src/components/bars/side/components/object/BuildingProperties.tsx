@@ -48,14 +48,14 @@ export function BuildingProperties({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Building-wide properties */}
       <CollapsibleSection
         title="Building Properties"
         defaultCollapsed={true}
         icon={<span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>}
       >
-        <div className="space-y-4">
+        <div className="space-y-2">
           <NumberField
             label="Floors"
             value={selected.floors}

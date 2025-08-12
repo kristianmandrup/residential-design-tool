@@ -1,9 +1,9 @@
 import React from "react";
 import { useStore } from "@/store/useStore";
 import { ObjectPropertiesSection } from "./ObjectPropertiesSection";
+import { ObjectBaseProps } from "./components/ObjectBaseProps";
 import Section from "../../generic/Section";
 import InputField from "../../generic/InputField";
-import Label from "../../generic/Label";
 
 export default function SelectedSection() {
   const objects = useStore((s) => s.objects);
@@ -15,8 +15,12 @@ export default function SelectedSection() {
   const gridX = selectedObject
     ? Math.round(selectedObject.position[0] / gridSize)
     : null;
-  const gridZ = selectedObject
+  const gridY = selectedObject
     ? Math.round(selectedObject.position[2] / gridSize)
+    : null;
+
+  const gridZ = selectedObject
+    ? Math.round(selectedObject.position[1] / gridSize)
     : null;
 
   return (
@@ -31,16 +35,12 @@ export default function SelectedSection() {
             }
           />
         </div>
-        <div>
-          <Label htmlFor="selected-coordinates">Grid Coordinates</Label>
-          <p className="mt-1 text-sm text-gray-600">
-            X: {gridX}, Z: {gridZ}
-          </p>
-        </div>
-        <div>
-          <Label htmlFor="selected-type">Type</Label>
-          <p className="mt-1 text-sm text-gray-600">{selectedObject.type}</p>
-        </div>
+        <ObjectBaseProps
+          gridX={gridX}
+          gridY={gridY}
+          gridZ={gridZ}
+          type={selectedObject.type}
+        />
         <ObjectPropertiesSection
           selectedObject={selectedObject}
           updateObject={updateObject}
