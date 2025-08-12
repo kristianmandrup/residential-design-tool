@@ -92,9 +92,14 @@ export const useStore = create<StoreState>((set, get) => ({
         : {}),
       ...(obj.type === "road"
         ? {
-            points: (obj as Partial<RoadObj>).points ?? [],
-            width: (obj as Partial<RoadObj>).width ?? 1,
-            gridWidth: (obj as Partial<RoadObj>).gridWidth ?? 1,
+            points: (obj as Partial<RoadObj>).points ?? [
+              { x: -2, z: 0 },
+              { x: 2, z: 0 }
+            ],
+            width: (obj as Partial<RoadObj>).width ?? 6,
+            roadType: (obj as Partial<RoadObj>).roadType ?? "residential",
+            color: (obj as Partial<RoadObj>).color ?? "#404040",
+            gridWidth: (obj as Partial<RoadObj>).gridWidth ?? 4,
             gridDepth: (obj as Partial<RoadObj>).gridDepth ?? 1,
             gridHeight: (obj as Partial<RoadObj>).gridHeight ?? 0.1,
           }

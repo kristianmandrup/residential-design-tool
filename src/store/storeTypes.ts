@@ -1,5 +1,11 @@
 export type RoofType = "flat" | "gabled" | "hipped";
-export type ObjType = "building" | "tree" | "road" | "wall" | "water";
+export type ObjType =
+  | "building"
+  | "tree"
+  | "road"
+  | "wall"
+  | "water"
+  | "intersection";
 
 export interface SceneBase {
   id: string;
@@ -50,10 +56,17 @@ export interface WallObj extends SceneBase {
   gridHeight?: number;
 }
 
+export interface RoadPoint {
+  x: number;
+  z: number;
+  controlPoint?: { x: number; z: number };
+}
+
 export interface RoadObj extends SceneBase {
   type: "road";
-  points: [number, number][];
+  points: RoadPoint[];
   width: number;
+  roadType: "residential" | "highway" | "dirt" | "pedestrian";
   color?: string;
   direction?: number;
   gridWidth?: number;
@@ -71,7 +84,20 @@ export interface WaterObj extends SceneBase {
   gridHeight?: number;
 }
 
-export type SceneObj = BuildingObj | TreeObj | WallObj | RoadObj | WaterObj;
+export interface IntersectionObj extends SceneBase {
+  type: "intersection";
+  connectedRoads: string[];
+  intersectionType: "T-junction" | "cross" | "Y-junction" | "multi-way";
+  radius: number;
+}
+
+export type SceneObj =
+  | BuildingObj
+  | TreeObj
+  | WallObj
+  | RoadObj
+  | WaterObj
+  | IntersectionObj;
 
 export type Snapshot = {
   objects: SceneObj[];
