@@ -1,3 +1,4 @@
+// src/components/build-objects/road/RoadDrawing.ts - Fixed Final
 import { RoadPoint } from "@/store/storeTypes";
 
 export interface RoadDrawingState {
@@ -74,48 +75,86 @@ export function useEnhancedRoadDrawing(
 
     const snappedPosition = snapToGridIfEnabled(intersect.x, intersect.z);
 
-    // If double-clicking, finish the road
-    if (isDoubleClick) {
-      if (tempRoadPoints.length >= 1) {
-        const roadDefaults = ROAD_DEFAULTS[selectedRoadType];
+    console.log("Road drawing click:", {
+      isDoubleClick,
+      currentPoints: tempRoadPoints.length,
+      newPosition: snappedPosition,
+      timeGap: lastClickTime ? now - lastClickTime : "first-click",
+    });
 
-        // Create the final road object
-        addObject({
-          type: "road",
-          roadType: selectedRoadType,
-          points: tempRoadPoints,
-          position: [0, 0, 0],
-          rotation: [0, 0, 0],
-          scale: [1, 1, 1],
-          width: roadWidth || roadDefaults.width,
-          color: roadDefaults.color,
-          gridWidth:
-            Math.max(...tempRoadPoints.map((p) => Math.abs(p.x))) * 2 || 2,
-          gridDepth:
-            Math.max(...tempRoadPoints.map((p) => Math.abs(p.z))) * 2 || 2,
-          gridHeight: 0.1,
-        });
+    // If double-clicking and we have at least 2 points, finish the road
+    if (isDoubleClick && tempRoadPoints.length >= 2) {
+      const roadDefaults = ROAD_DEFAULTS[selectedRoadType];
+
+      // Create a copy of the points to avoid reference issues
+      const finalPoints = tempRoadPoints.map((p) => ({
+        x: p.x,
+        z: p.z,
+        ...(p.controlPoint && { controlPoint: { ...p.controlPoint } }),
+      }));
+
+      const roadObject = {
+        type: "road" as const,
+        roadType: selectedRoadType,
+        points: finalPoints,
+        position: [0, 0, 0] as [number, number, number],
+        rotation: [0, 0, 0] as [number, number, number],
+        scale: [1, 1, 1] as [number, number, number],
+        width: roadWidth || roadDefaults.width,
+        color: roadDefaults.color,
+        gridWidth: Math.max(4, roadWidth || roadDefaults.width),
+        gridDepth: Math.max(4, roadWidth || roadDefaults.width),
+        gridHeight: 0.1,
+      };
+
+      console.log("🛣️ CREATING FINAL ROAD:", {
+        points: finalPoints,
+        roadType: selectedRoadType,
+        width: roadObject.width,
+      });
+
+      // Validate points
+      const validPoints = finalPoints.every(
+        (p) =>
+          typeof p.x === "number" &&
+          typeof p.z === "number" &&
+          !isNaN(p.x) &&
+          !isNaN(p.z)
+      );
+
+      if (validPoints && finalPoints.length >= 2) {
+        addObject(roadObject);
+        console.log("✅ Road created successfully");
+
+        // Reset state immediately to prevent duplicate creation
+        setTempRoadPoints([]);
+        setIsDrawingRoad(false);
+        setLastClickTime(null);
+      } else {
+        console.error("❌ Invalid points, not creating road:", finalPoints);
       }
 
-      // Reset drawing state
-      setTempRoadPoints([]);
-      setIsDrawingRoad(false);
-      setLastClickTime(null);
-      return;
+      return; // Important: return here to prevent adding another point
     }
 
-    // Add point to temporary road
+    // Single click - add point to temporary road
     const newPoint: RoadPoint = {
       x: Math.round(snappedPosition.x * 100) / 100,
       z: Math.round(snappedPosition.z * 100) / 100,
     };
 
+    console.log("➕ Adding point:", newPoint);
+
+    const newPoints = [...tempRoadPoints, newPoint];
+    setTempRoadPoints(newPoints);
     setIsDrawingRoad(true);
-    setTempRoadPoints([...tempRoadPoints, newPoint]);
     setLastClickTime(now);
+
+    console.log("📍 Current road points:", newPoints);
   };
 
   const cancelRoadDrawing = () => {
+    console.log("❌ Cancelling road drawing");
     setTempRoadPoints([]);
     setIsDrawingRoad(false);
     setLastClickTime(null);
@@ -128,6 +167,7 @@ export function useEnhancedRoadDrawing(
       if (newPoints.length === 0) {
         setIsDrawingRoad(false);
       }
+      console.log("↶ Undid last point, remaining:", newPoints);
     }
   };
 
@@ -138,7 +178,6 @@ export function useEnhancedRoadDrawing(
     const lastPoint = tempRoadPoints[lastIndex];
     const currentPoint = tempRoadPoints[lastIndex + 1];
 
-    // Calculate control point position (offset perpendicular to the line)
     const midX = (lastPoint.x + currentPoint.x) / 2;
     const midZ = (lastPoint.z + currentPoint.z) / 2;
     const dx = currentPoint.x - lastPoint.x;
@@ -148,7 +187,7 @@ export function useEnhancedRoadDrawing(
     if (length > 0) {
       const perpX = -dz / length;
       const perpZ = dx / length;
-      const offset = length * 0.3; // 30% of segment length
+      const offset = length * 0.3;
 
       const controlPoint = {
         x: midX + perpX * offset,
@@ -159,17 +198,6 @@ export function useEnhancedRoadDrawing(
       newPoints[lastIndex] = { ...lastPoint, controlPoint };
       setTempRoadPoints(newPoints);
     }
-  };
-
-  const detectAndCreateIntersections = (
-    newRoadPoints: RoadPoint[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _existingRoads: any[]
-  ) => {
-    // This would analyze the new road against existing roads to find intersections
-    // For now, return the points as-is
-    // TODO: Implement intersection detection algorithm
-    return newRoadPoints;
   };
 
   const getRoadPreview = () => {
@@ -187,21 +215,18 @@ export function useEnhancedRoadDrawing(
     if (!isDrawingRoad) {
       return "Click to start drawing a road";
     } else if (tempRoadPoints.length === 1) {
-      return "Click to add road segments, double-click to finish";
+      return "Click to add more points, double-click to finish";
     } else {
-      return `Road with ${tempRoadPoints.length} points - Double-click to finish, 'C' for curve, 'U' to undo`;
+      return `Road with ${tempRoadPoints.length} points - Double-click to finish`;
     }
   };
 
   return {
-    // State
     isDrawingRoad,
     tempRoadPoints,
     selectedRoadType,
     roadWidth,
     snapToGrid,
-
-    // Actions
     handleRoadDrawing,
     cancelRoadDrawing,
     undoLastPoint,
@@ -209,13 +234,8 @@ export function useEnhancedRoadDrawing(
     setSelectedRoadType,
     setRoadWidth,
     setSnapToGrid,
-
-    // Utilities
     getRoadPreview,
     getDrawingInstructions,
-    detectAndCreateIntersections,
-
-    // Constants
     ROAD_DEFAULTS,
   };
 }
