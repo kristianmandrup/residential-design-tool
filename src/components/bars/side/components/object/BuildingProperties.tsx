@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { BuildingObj, SceneObj } from "@/store";
-import NumberField from "../../../../generic/NumberField";
-import GridSizeFields from "../GridSizeFields";
-import { SelectField, ColorField } from "../../../../generic";
+import { BuildingObj, SceneObj } from "@/store/storeTypes";
+import { PositionInputs, GridSizeFields } from "../";
+import { CollapsibleSection } from "../..";
+import { NumberField, SelectField, ColorField } from "@/components/generic";
 import { FloorProperties } from "./FloorProperties";
-import PositionInputs from "../PositionInputs";
-import CollapsibleSection from "../../CollapsibleSection";
 
 interface BuildingPropertiesProps {
   selected: BuildingObj;

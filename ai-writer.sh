@@ -8,10 +8,10 @@ FORCE=false
 INPUT_FILE=""
 
 # Write back with dry run first
-# ./ai-writer.sh -d ai-input.txt
+# ./ai-writer.sh -d ai-output.txt
 
 # Actually write the files  
-# ./ai-writer.sh -f ai-input.txt
+# ./ai-writer.sh -f ai-output.txt
 
 # Function to show usage
 show_usage() {
@@ -170,7 +170,7 @@ process_content() {
     ((line_number++))
     
     # Check if this is a file header line (starts with "File: ")
-    if [[ "$line" =~ ^// File:\ (.+)$ ]]; then
+    if [[ "$line" =~ ^//\ File:\ (.+)$ ]]; then
       # Write previous file if we have one
       if [ -n "$current_file" ] && [ -n "$current_content" ]; then
         write_file "$current_file" "$current_content"

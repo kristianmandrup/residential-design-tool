@@ -1,7 +1,7 @@
 import React from "react";
-import { BuildingObj, SceneObj } from "@/store";
-import { SwitchField, ColorField, InputField } from "../../../../generic";
-import CollapsibleSection from "../../CollapsibleSection";
+import { BuildingObj, SceneObj } from "@/store/storeTypes";
+import { SwitchField, ColorField, InputField } from "@/components/generic";
+import { CollapsibleSection } from "../../";
 
 interface FloorPropertiesProps {
   selected: BuildingObj;

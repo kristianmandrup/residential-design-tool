@@ -1,6 +1,6 @@
 // src/components/bars/side/components/object/RoadStatisticsDisplay.tsx
 import React from "react";
-import { RoadObj } from "@/store";
+import { RoadObj } from "@/store/storeTypes";
 import { getRoadStatistics, ROAD_TYPE_CONFIGS } from "./roadUtils";
 
 interface RoadStatisticsDisplayProps {

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useStore } from "@/store/useStore";
 import { downloadJSON, readJSONFile } from "@/utils/io";
-import { SceneObj } from "@/store";
+import { SceneObj } from "@/store/storeTypes";
 import InputField from "../../generic/InputField";
 import Button from "../../generic/Button";
 import Section from "../../generic/Section";

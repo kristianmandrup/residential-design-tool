@@ -1,4 +1,4 @@
-// src/components/build-objects/road/RoadDrawing.ts - Fixed Final
+// src/components/build-objects/road/RoadDrawing.ts - Fixed Final with Elevation Support
 import { RoadPoint } from "@/store/storeTypes";
 
 export interface RoadDrawingState {
@@ -23,10 +23,10 @@ export interface RoadDrawingActions {
 }
 
 const ROAD_DEFAULTS = {
-  residential: { width: 6, color: "#404040" },
-  highway: { width: 8, color: "#383838" },
-  dirt: { width: 4, color: "#8B4513" },
-  pedestrian: { width: 2, color: "#606060" },
+  residential: { width: 6, color: "#404040", elevation: 0.02, thickness: 0.08 },
+  highway: { width: 8, color: "#383838", elevation: 0.03, thickness: 0.1 },
+  dirt: { width: 4, color: "#8B4513", elevation: 0.01, thickness: 0.05 },
+  pedestrian: { width: 2, color: "#606060", elevation: 0.015, thickness: 0.04 },
 };
 
 export function useEnhancedRoadDrawing(
@@ -102,15 +102,19 @@ export function useEnhancedRoadDrawing(
         scale: [1, 1, 1] as [number, number, number],
         width: roadWidth || roadDefaults.width,
         color: roadDefaults.color,
+        elevation: roadDefaults.elevation,
+        thickness: roadDefaults.thickness,
         gridWidth: Math.max(4, roadWidth || roadDefaults.width),
         gridDepth: Math.max(4, roadWidth || roadDefaults.width),
-        gridHeight: 0.1,
+        gridHeight: roadDefaults.thickness,
       };
 
       console.log("🛣️ CREATING FINAL ROAD:", {
         points: finalPoints,
         roadType: selectedRoadType,
         width: roadObject.width,
+        elevation: roadObject.elevation,
+        thickness: roadObject.thickness,
       });
 
       // Validate points
@@ -203,11 +207,14 @@ export function useEnhancedRoadDrawing(
   const getRoadPreview = () => {
     if (!isDrawingRoad || tempRoadPoints.length === 0) return null;
 
+    const roadDefaults = ROAD_DEFAULTS[selectedRoadType];
+
     return {
       points: tempRoadPoints,
       roadType: selectedRoadType,
-      width: roadWidth || ROAD_DEFAULTS[selectedRoadType].width,
-      color: ROAD_DEFAULTS[selectedRoadType].color,
+      width: roadWidth || roadDefaults.width,
+      color: roadDefaults.color,
+      elevation: roadDefaults.elevation,
     };
   };
 

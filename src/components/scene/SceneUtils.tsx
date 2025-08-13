@@ -1,16 +1,9 @@
 import * as THREE from "three";
 
-export interface SceneObject {
-  id: string;
-  type: string;
-  position: [number, number, number];
-  rotation: [number, number, number];
-  scale: [number, number, number];
-  gridWidth?: number;
-  gridDepth?: number;
-  gridHeight?: number;
-  [key: string]: unknown;
-}
+import { SceneObj } from "@/store/storeTypes";
+
+// Type alias for SceneObject that extends SceneObj with additional properties
+export type SceneObject = SceneObj;
 
 export function getIntersection(
   evt: PointerEvent,

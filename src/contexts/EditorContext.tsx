@@ -1,20 +1,17 @@
 "use client";
 import React, { createContext, useContext, useState } from "react";
 
-export type Tool =
-  | "select"
-  | "add-building"
-  | "add-tree"
-  | "add-road"
-  | "add-wall"
-  | "erase";
+// Import the unified Tool type from ToolContext
+export type { Tool } from "./ToolContext";
 
 export type RoofType = "flat" | "gabled" | "hipped";
 
 export interface SceneObjectBase {
   id: string;
-  type: "building" | "tree" | "road" | "wall";
+  type: "building" | "tree" | "road" | "wall" | "water";
   position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
 }
 
 export interface BuildingObject extends SceneObjectBase {
@@ -23,38 +20,72 @@ export interface BuildingObject extends SceneObjectBase {
   color: string;
   roofType: RoofType;
   roofColor: string;
+  gridWidth: number;
+  gridDepth: number;
+  gridHeight: number;
 }
 
 export interface TreeObject extends SceneObjectBase {
   type: "tree";
-  scale: number;
+  treeType: string;
+  gridWidth: number;
+  gridDepth: number;
+  gridHeight: number;
 }
 
 export interface RoadObject extends SceneObjectBase {
   type: "road";
-  length: number;
+  roadType: "residential" | "highway" | "dirt" | "pedestrian";
+  points: Array<{ x: number; z: number; controlPoint?: { x: number; z: number } }>;
   width: number;
-  rotationY: number;
+  color: string;
+  elevation: number;
+  thickness: number;
+  gridWidth: number;
+  gridDepth: number;
+  gridHeight: number;
 }
 
 export interface WallObject extends SceneObjectBase {
   type: "wall";
   length: number;
   height: number;
-  rotationY: number;
+  thickness: number;
+  color: string;
+  gridWidth: number;
+  gridDepth: number;
+  gridHeight: number;
 }
 
-export type SceneObject = BuildingObject | TreeObject | RoadObject | WallObject;
+export interface WaterObject extends SceneObjectBase {
+  type: "water";
+  width: number;
+  depth: number;
+  waveHeight: number;
+  transparency: number;
+  gridWidth: number;
+  gridDepth: number;
+  gridHeight: number;
+}
+
+export type SceneObject = BuildingObject | TreeObject | RoadObject | WallObject | WaterObject;
 
 export interface EditorState {
-  tool: Tool;
-  setTool: (t: Tool) => void;
   objects: SceneObject[];
   addObject: (obj: SceneObject) => void;
   updateObject: (id: string, patch: Partial<SceneObject>) => void;
   removeObject: (id: string) => void;
   selectedId: string | null;
+  selectedIds: string[];
   setSelectedId: (id: string | null) => void;
+  setSelectedIds: (ids: string[]) => void;
+  // Scene settings
+  gridSize: number;
+  setGridSize: (size: number) => void;
+  snapEnabled: boolean;
+  setSnapEnabled: (enabled: boolean) => void;
+  showGrid: boolean;
+  setShowGrid: (show: boolean) => void;
 }
 
 const EditorContext = createContext<EditorState | undefined>(undefined);
@@ -68,38 +99,53 @@ export const useEditor = () => {
 export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [tool, setTool] = useState<Tool>("select");
   const [objects, setObjects] = useState<SceneObject[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [gridSize, setGridSize] = useState(1);
+  const [snapEnabled, setSnapEnabled] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
 
   function addObject(obj: SceneObject) {
+    console.log("🏗️ Adding object to scene:", obj);
     setObjects((s) => [...s, obj]);
     setSelectedId(obj.id);
+    setSelectedIds([obj.id]);
   }
 
-  function updateObject(id: string, patch: Omit<Partial<SceneObject>, "type">) {
+  function updateObject(id: string, patch: Partial<SceneObject>) {
+    console.log("🔄 Updating object:", id, patch);
     setObjects((s) => s.map((o) => (o.id === id ? { ...o, ...patch } : o)));
   }
 
   function removeObject(id: string) {
+    console.log("🗑️ Removing object:", id);
     setObjects((s) => s.filter((o) => o.id !== id));
     setSelectedId((cur) => (cur === id ? null : cur));
+    setSelectedIds((cur) => cur.filter(selId => selId !== id));
   }
 
   return (
     <EditorContext.Provider
       value={{
-        tool,
-        setTool,
         objects,
         addObject,
         updateObject,
         removeObject,
         selectedId,
+        selectedIds,
         setSelectedId,
+        setSelectedIds,
+        gridSize,
+        setGridSize,
+        snapEnabled,
+        setSnapEnabled,
+        showGrid,
+        setShowGrid,
       }}
     >
       {children}
     </EditorContext.Provider>
   );
 };
+

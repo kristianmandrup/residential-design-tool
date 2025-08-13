@@ -1,5 +1,5 @@
 import React from "react";
-import { SceneObj } from "@/store";
+import { SceneObj } from "@/store/storeTypes";
 import NumberField from "@/components/generic/NumberField";
 import SectionHeader from "@/components/generic/SectionHeader";
 
@@ -8,7 +8,7 @@ interface PositionInputsProps {
   updateObject: (id: string, patch: Partial<SceneObj>) => void;
 }
 
-export default function PositionInputs({
+export function PositionInputs({
   selected,
   updateObject,
 }: PositionInputsProps) {

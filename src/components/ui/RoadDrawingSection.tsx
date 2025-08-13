@@ -1,6 +1,7 @@
 import React from "react";
 import Section from "../../generic/Section";
-import { useRoadDrawingControls, useTool } from "@/contexts";
+import { useRoadDrawingControls } from "@/contexts/RoadDrawingContext";
+import { useTool } from "@/contexts/ToolContext";
 
 export default function RoadDrawingSection() {
   const { selectedTool } = useTool();
@@ -16,6 +17,7 @@ export default function RoadDrawingSection() {
     getInstructions,
   } = useRoadDrawingControls();
 
+  // Check if road tool is selected (using consistent naming)
   const isRoadTool = selectedTool === "road";
 
   if (!isRoadTool && !isDrawingRoad) {
@@ -25,11 +27,21 @@ export default function RoadDrawingSection() {
   const handleRoadTypeChange = (
     type: "residential" | "highway" | "dirt" | "pedestrian"
   ) => {
+    console.log("UI: Changing road type to:", type);
     setSelectedRoadType(type);
   };
 
   const handleWidthChange = (width: number) => {
+    console.log("UI: Changing road width to:", width);
     setRoadWidth(width);
+  };
+
+  // Road type configurations for UI display
+  const roadTypeInfo = {
+    residential: { description: "6m wide, standard suburban", defaultWidth: 6 },
+    highway: { description: "8m wide, high-speed arterials", defaultWidth: 8 },
+    dirt: { description: "4m wide, unpaved rural", defaultWidth: 4 },
+    pedestrian: { description: "2m wide, walking paths", defaultWidth: 2 },
   };
 
   return (
@@ -40,7 +52,10 @@ export default function RoadDrawingSection() {
           <h3 className="text-lg font-semibold text-gray-800">Road Drawing</h3>
           {isDrawingRoad && (
             <button
-              onClick={cancelRoadDrawing}
+              onClick={() => {
+                console.log("UI: Canceling road drawing");
+                cancelRoadDrawing();
+              }}
               className="px-2 py-1 text-xs text-white transition-colors bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50"
               title="Cancel road drawing (Esc)"
             >
@@ -49,10 +64,20 @@ export default function RoadDrawingSection() {
           )}
         </div>
 
+        {/* Debug Display */}
+        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+          <div><strong>Debug Info:</strong></div>
+          <div>Selected Tool: {selectedTool}</div>
+          <div>Road Type: {selectedRoadType}</div>
+          <div>Width: {roadWidth}m</div>
+          <div>Drawing: {isDrawingRoad ? 'Yes' : 'No'}</div>
+          <div>Points: {tempRoadPoints.length}</div>
+        </div>
+
         {/* Road Type Selection */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            Road Type
+            Road Type: <span className="text-blue-600 font-semibold">{selectedRoadType}</span>
           </label>
           <div className="grid grid-cols-2 gap-2">
             {(["residential", "highway", "dirt", "pedestrian"] as const).map(
@@ -66,6 +91,7 @@ export default function RoadDrawingSection() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:-translate-y-0.5 hover:shadow-sm"
                   }`}
                   disabled={isDrawingRoad}
+                  title={`Switch to ${type} road (${roadTypeInfo[type].defaultWidth}m default)`}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </button>
@@ -87,7 +113,11 @@ export default function RoadDrawingSection() {
               max="12"
               step="0.5"
               value={roadWidth}
-              onChange={(e) => handleWidthChange(parseFloat(e.target.value))}
+              onChange={(e) => {
+                const newWidth = parseFloat(e.target.value);
+                console.log("UI: Slider changed to:", newWidth);
+                handleWidthChange(newWidth);
+              }}
               disabled={isDrawingRoad}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer
                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
@@ -97,22 +127,42 @@ export default function RoadDrawingSection() {
                        [&::-webkit-slider-thumb]:hover:bg-blue-600 [&::-webkit-slider-thumb]:transition-colors
                        [&::-webkit-slider-thumb]:disabled:bg-gray-400 [&::-webkit-slider-thumb]:disabled:cursor-not-allowed"
             />
-            <input
-              type="number"
-              min="2"
-              max="12"
-              step="0.5"
-              value={roadWidth}
-              onChange={(e) => handleWidthChange(parseFloat(e.target.value))}
-              disabled={isDrawingRoad}
-              className="w-full px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min="2"
+                max="12"
+                step="0.5"
+                value={roadWidth}
+                onChange={(e) => {
+                  const newWidth = parseFloat(e.target.value);
+                  if (!isNaN(newWidth)) {
+                    console.log("UI: Number input changed to:", newWidth);
+                    handleWidthChange(newWidth);
+                  }
+                }}
+                disabled={isDrawingRoad}
+                className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              <button
+                onClick={() => {
+                  const defaultWidth = roadTypeInfo[selectedRoadType].defaultWidth;
+                  console.log("UI: Resetting to default width:", defaultWidth);
+                  handleWidthChange(defaultWidth);
+                }}
+                disabled={isDrawingRoad}
+                className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Reset to default width for this road type"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Drawing Status */}
         {isDrawingRoad && (
-          <div className="p-3 border border-blue-200 rounded-lg bg-blue-50 animate-pulse">
+          <div className="p-3 border border-blue-200 rounded-lg bg-blue-50">
             <div className="space-y-2">
               <p className="text-sm font-medium text-blue-800">
                 {getInstructions()}
@@ -124,7 +174,10 @@ export default function RoadDrawingSection() {
 
               <div className="flex gap-2 mt-3">
                 <button
-                  onClick={undoLastRoadPoint}
+                  onClick={() => {
+                    console.log("UI: Undoing last road point");
+                    undoLastRoadPoint();
+                  }}
                   disabled={tempRoadPoints.length === 0}
                   className="flex-1 px-3 py-2 text-xs text-white transition-colors bg-blue-500 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   title="Undo last point (Ctrl+U)"
@@ -132,7 +185,10 @@ export default function RoadDrawingSection() {
                   ↶ Undo Point
                 </button>
                 <button
-                  onClick={cancelRoadDrawing}
+                  onClick={() => {
+                    console.log("UI: Canceling road drawing from button");
+                    cancelRoadDrawing();
+                  }}
                   className="flex-1 px-3 py-2 text-xs text-white transition-colors bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                   title="Cancel drawing (Esc)"
                 >
@@ -143,62 +199,51 @@ export default function RoadDrawingSection() {
           </div>
         )}
 
-        {/* Road Type Information */}
-        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50">
-          <h4 className="mb-2 text-sm font-medium text-gray-800">
-            Road Types:
-          </h4>
-          <div className="space-y-1 text-xs text-gray-600">
-            <div className="flex justify-between">
-              <span className="font-medium">Residential:</span>
-              <span className="text-gray-500">6m wide, standard suburban</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Highway:</span>
-              <span className="text-gray-500">
-                8m wide, high-speed arterials
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Dirt:</span>
-              <span className="text-gray-500">4m wide, unpaved rural</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Pedestrian:</span>
-              <span className="text-gray-500">2m wide, walking paths</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Drawing Tips */}
+        {/* Enhanced Drawing Tips */}
         <div className="p-3 border border-green-200 rounded-lg bg-green-50">
           <h4 className="mb-2 text-sm font-medium text-green-800">
-            Drawing Tips:
+            Drawing Controls:
           </h4>
           <ul className="space-y-1 text-xs text-green-700">
             <li className="flex items-start gap-2">
               <span className="font-bold text-green-500">•</span>
-              <span>Click to place road points</span>
+              <span><strong>Click</strong> to place road points</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-green-500">•</span>
-              <span>Double-click to finish the road</span>
+              <span><strong>Double-click</strong> to finish the road</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-green-500">•</span>
-              <span>Press Esc to cancel drawing</span>
+              <span><strong>Enter</strong> to finish the road (NEW!)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-green-500">•</span>
-              <span>Press Ctrl+U to undo last point</span>
+              <span><strong>Esc</strong> to cancel drawing</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-green-500">•</span>
-              <span>Grid snapping helps align roads</span>
+              <span><strong>Ctrl+U</strong> to undo last point</span>
             </li>
           </ul>
+        </div>
+
+        {/* Tool Shortcuts */}
+        <div className="p-3 border border-blue-200 rounded-lg bg-blue-50">
+          <h4 className="mb-2 text-sm font-medium text-blue-800">
+            Tool Shortcuts:
+          </h4>
+          <div className="grid grid-cols-2 gap-1 text-xs text-blue-700">
+            <div><strong>S</strong> - Select tool</div>
+            <div><strong>R</strong> - Road tool</div>
+            <div><strong>B</strong> - Building tool</div>
+            <div><strong>T</strong> - Tree tool</div>
+            <div><strong>W</strong> - Wall tool</div>
+            <div><strong>A</strong> - Water tool</div>
+          </div>
         </div>
       </div>
     </Section>
   );
 }
+

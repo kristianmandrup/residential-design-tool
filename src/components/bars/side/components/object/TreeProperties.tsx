@@ -1,7 +1,6 @@
 import React from "react";
-import { TreeObj, SceneObj } from "@/store";
-import GridSizeFields from "../GridSizeFields";
-import PositionInputs from "../PositionInputs";
+import { TreeObj, SceneObj } from "@/store/storeTypes";
+import { PositionInputs, GridSizeFields } from "../";
 
 interface TreePropertiesProps {
   selected: TreeObj;

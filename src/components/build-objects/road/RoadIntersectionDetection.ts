@@ -15,6 +15,7 @@ export interface Intersection {
   type: "T-junction" | "cross" | "Y-junction" | "multi-way";
   angle: number;
   radius: number;
+  elevation: number; // Added elevation for intersections
 }
 
 export interface RoadSegment {
@@ -86,7 +87,8 @@ function roadToSegments(road: RoadData): RoadSegment[] {
  */
 export function detectIntersections(
   roads: RoadData[],
-  tolerance: number = 0.5
+  tolerance: number = 0.5,
+  baseElevation: number = 0.02
 ): Intersection[] {
   const intersections: Intersection[] = [];
   const segments = roads.flatMap((road) => roadToSegments(road));
@@ -134,6 +136,7 @@ export function detectIntersections(
               connectedRoads: [seg1.roadId, seg2.roadId],
               type: "cross", // Will be determined later
               angle: 0,
+              elevation: baseElevation, // Use base elevation for intersections
               radius:
                 Math.max(
                   roads.find((r) => r.id === seg1.roadId)?.width || 4,
@@ -164,7 +167,7 @@ export function detectIntersections(
 }
 
 /**
- * Generate intersection geometry
+ * Generate intersection geometry with proper elevation
  */
 export function generateIntersectionGeometry(
   intersection: Intersection,
@@ -172,6 +175,7 @@ export function generateIntersectionGeometry(
 ): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   const radius = intersection.radius * 1.5; // Make intersection slightly larger
+  const elevation = intersection.elevation + 0.001; // Slightly above road surface
 
   // Create a circular intersection base
   const segments = 32;
@@ -179,14 +183,14 @@ export function generateIntersectionGeometry(
   const indices: number[] = [];
 
   // Center vertex
-  vertices.push(intersection.position.x, 0.001, intersection.position.z);
+  vertices.push(intersection.position.x, elevation, intersection.position.z);
 
   // Outer vertices
   for (let i = 0; i < segments; i++) {
     const angle = (i / segments) * Math.PI * 2;
     const x = intersection.position.x + Math.cos(angle) * radius;
     const z = intersection.position.z + Math.sin(angle) * radius;
-    vertices.push(x, 0.001, z);
+    vertices.push(x, elevation, z);
   }
 
   // Create triangles from center to outer ring
@@ -213,6 +217,7 @@ export function generateIntersectionMarkings(
   _roads: RoadData[]
 ): THREE.Group {
   const group = new THREE.Group();
+  const markingElevation = intersection.elevation + 0.002; // Above intersection surface
 
   // Add crosswalk markings for pedestrian intersections
   if (intersection.type === "cross" || intersection.type === "T-junction") {
@@ -239,7 +244,7 @@ export function generateIntersectionMarkings(
         })
       );
 
-      marking.position.set(x, 0.002, z);
+      marking.position.set(x, markingElevation, z);
       marking.rotation.y = angle;
       group.add(marking);
     }
@@ -337,3 +342,4 @@ export function processRoadSystem(roads: RoadData[]): {
     intersections,
   };
 }
+

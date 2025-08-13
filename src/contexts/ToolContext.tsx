@@ -26,7 +26,7 @@ export const useTool = () => {
 export const ToolProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [selectedTool, setSelectedTool] = useState<Tool>("building");
+  const [selectedTool, setSelectedTool] = useState<Tool>("select");
 
   return (
     <ToolContext.Provider value={{ selectedTool, setSelectedTool }}>
@@ -34,3 +34,4 @@ export const ToolProvider: React.FC<{ children: React.ReactNode }> = ({
     </ToolContext.Provider>
   );
 };
+

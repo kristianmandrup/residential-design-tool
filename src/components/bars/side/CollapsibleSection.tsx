@@ -10,7 +10,7 @@ interface CollapsibleSectionProps {
   onToggle?: (collapsed: boolean) => void;
 }
 
-export default function CollapsibleSection({
+export function CollapsibleSection({
   title,
   children,
   defaultCollapsed = false,

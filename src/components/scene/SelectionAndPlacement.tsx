@@ -1,47 +1,34 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/components/scene/SelectionAndPlacement.tsx
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback } from "react";
 import { useThree } from "@react-three/fiber";
-import { useStore, StoreState } from "@/store";
+import { useEditor } from "@/contexts/EditorContext";
 import { useTool } from "@/contexts/ToolContext";
-import { RoadPoint } from "@/store/storeTypes";
-import {
-  usePointerEventSystem,
-  PointerEventContext,
-  StoreActions,
-  SelectionState,
-  RoadDrawingState,
-  RoadDrawingActions,
-  ToolState,
-} from "./pointer-events";
+import { useRoadDrawing } from "@/contexts/RoadDrawingContext";
+import { usePointerEventSystem } from "./pointer-events";
 import { RoadPreview } from "@/components/build-objects/road";
+import { PointerEventContext, StoreActions, SelectionState, ToolState } from "./pointer-events/types";
 
 export function SelectionAndPlacement() {
   const { camera, gl, scene } = useThree();
 
-  // Store state and actions
-  const addObject = useStore((s: StoreState) => s.addObject);
-  const updateObject = useStore((s: StoreState) => s.updateObject);
-  const removeObject = useStore((s: StoreState) => s.removeObject);
-  const setSelectedId = useStore((s: StoreState) => s.setSelectedId);
-  const setSelectedIds = useStore((s: StoreState) => s.setSelectedIds);
-  const selectedId = useStore((s: StoreState) => s.selectedId);
-  const selectedIds = useStore((s: StoreState) => s.selectedIds);
-  const gridSize = useStore((s: StoreState) => s.gridSize);
-  const snap = useStore((s: StoreState) => s.snapEnabled);
-  const objects = useStore((s: StoreState) => s.objects);
+  // Editor context (replaces old store)
+  const {
+    objects,
+    addObject,
+    updateObject,
+    removeObject,
+    selectedId,
+    selectedIds,
+    setSelectedId,
+    setSelectedIds,
+    gridSize,
+    snapEnabled,
+  } = useEditor();
 
   // Tool context
   const { selectedTool, setSelectedTool } = useTool();
 
-  // Road drawing state
-  const [isDrawingRoad, setIsDrawingRoad] = useState(false);
-  const [tempRoadPoints, setTempRoadPoints] = useState<RoadPoint[]>([]);
-  const [lastClickTime, setLastClickTime] = useState<number | null>(null);
-  const [selectedRoadType, setSelectedRoadType] = useState<
-    "residential" | "highway" | "dirt" | "pedestrian"
-  >("residential");
-  const [roadWidth, setRoadWidth] = useState(6);
+  // Road drawing context
+  const roadDrawing = useRoadDrawing();
 
   // Create context objects for the pointer event system
   const pointerContext: PointerEventContext = {
@@ -49,7 +36,7 @@ export function SelectionAndPlacement() {
     camera,
     scene,
     gridSize,
-    snap,
+    snap: snapEnabled,
     objects,
   };
 
@@ -66,22 +53,6 @@ export function SelectionAndPlacement() {
     selectedIds,
   };
 
-  const roadState: RoadDrawingState = {
-    isDrawingRoad,
-    tempRoadPoints,
-    lastClickTime,
-    selectedRoadType,
-    roadWidth,
-  };
-
-  const roadActions: RoadDrawingActions = {
-    setIsDrawingRoad,
-    setTempRoadPoints,
-    setLastClickTime,
-    setSelectedRoadType,
-    setRoadWidth,
-  };
-
   const toolState: ToolState = {
     selectedTool: selectedTool || "select",
     setSelectedTool,
@@ -91,14 +62,11 @@ export function SelectionAndPlacement() {
   const {
     handlePointerDown,
     handleKeyDown,
-    cancelRoadDrawing,
-    undoLastRoadPoint,
+    getRoadPreview,
   } = usePointerEventSystem(
     pointerContext,
     storeActions,
     selectionState,
-    roadState,
-    roadActions,
     toolState
   );
 
@@ -110,47 +78,6 @@ export function SelectionAndPlacement() {
   const handleContextMenuCallback = useCallback((e: Event) => {
     e.preventDefault();
   }, []);
-
-  // Expose road drawing controls for UI
-  const roadDrawingControls = useMemo(
-    () => ({
-      isDrawingRoad,
-      tempRoadPoints,
-      selectedRoadType,
-      roadWidth,
-      setSelectedRoadType,
-      setRoadWidth,
-      cancelRoadDrawing,
-      undoLastRoadPoint,
-      getInstructions: () => {
-        if (!isDrawingRoad) {
-          return "Click to start drawing a road";
-        } else if (tempRoadPoints.length === 1) {
-          return "Click to add road segments, double-click to finish";
-        } else {
-          return `Road with ${tempRoadPoints.length} points - Double-click to finish, Esc to cancel, Ctrl+U to undo`;
-        }
-      },
-    }),
-    [
-      isDrawingRoad,
-      tempRoadPoints,
-      selectedRoadType,
-      roadWidth,
-      setSelectedRoadType,
-      setRoadWidth,
-      cancelRoadDrawing,
-      undoLastRoadPoint,
-    ]
-  );
-
-  // Add road drawing controls to window for external access (optional)
-  useEffect(() => {
-    (window as any).roadDrawingControls = roadDrawingControls;
-    return () => {
-      delete (window as any).roadDrawingControls;
-    };
-  }, [roadDrawingControls]);
 
   // Set up event listeners
   useEffect(() => {
@@ -198,43 +125,22 @@ export function SelectionAndPlacement() {
     };
   }, [handleKeyDownCallback, gl.domElement]);
 
+  // Get road preview data
+  const roadPreview = getRoadPreview();
+
   return (
     <>
       {/* Render road preview during drawing */}
-      {isDrawingRoad && tempRoadPoints.length > 0 && (
+      {roadPreview && (
         <RoadPreview
-          points={tempRoadPoints}
-          width={roadWidth}
-          color="#404040"
+          points={roadPreview.points}
+          width={roadPreview.width}
+          color={roadPreview.color}
           opacity={0.7}
+          elevation={roadPreview.elevation}
         />
-      )}
-
-      {/* Road drawing instructions (could be moved to UI component) */}
-      {isDrawingRoad && (
-        <mesh position={[0, 0.5, 0]}>
-          {/* This is just a placeholder - you'd want to use HTML overlay for actual text */}
-          <boxGeometry args={[0.1, 0.1, 0.1]} />
-          <meshBasicMaterial color="yellow" />
-        </mesh>
       )}
     </>
   );
 }
 
-// Export road drawing controls hook for UI components
-export function useRoadDrawingControls() {
-  return (
-    (window as any).roadDrawingControls || {
-      isDrawingRoad: false,
-      tempRoadPoints: [],
-      selectedRoadType: "residential",
-      roadWidth: 6,
-      setSelectedRoadType: () => {},
-      setRoadWidth: () => {},
-      cancelRoadDrawing: () => {},
-      undoLastRoadPoint: () => {},
-      getInstructions: () => "Road drawing not initialized",
-    }
-  );
-}

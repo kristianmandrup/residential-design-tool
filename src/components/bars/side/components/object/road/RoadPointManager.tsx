@@ -1,6 +1,6 @@
 // src/components/bars/side/components/object/RoadPointManager.tsx
 import React, { useState } from "react";
-import { RoadObj, SceneObj, RoadPoint } from "@/store";
+import { RoadObj, SceneObj, RoadPoint } from "@/store/storeTypes";
 import { NumberField, SelectField } from "@/components/generic";
 import { createMidPoint, createControlPoint } from "./roadUtils";
 

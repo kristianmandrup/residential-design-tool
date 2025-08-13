@@ -1,24 +1,25 @@
-// src/components/build-objects/RoadObj.tsx - Fixed Mesh
 import React, { useMemo } from "react";
 import * as THREE from "three";
-import { useStore } from "@/store/useStore";
-import { RoadObj } from "@/store/storeTypes";
+import { useEditor } from "@/contexts/EditorContext";
+import { RoadObject } from "@/contexts/EditorContext";
 import { generateRoadGeometry } from "./road/roadGeometry";
 import { getRoadConfig } from "./road/roadConfig";
 import { RoadMarkings } from "./road/RoadMarkings";
 import { RoadSelectionIndicators } from "./road/RoadSelectionIndicators";
 
 interface RoadComponentProps {
-  data: RoadObj;
+  data: RoadObject;
 }
 
 export function Road({ data }: RoadComponentProps) {
-  const selectedId = useStore((s) => s.selectedId);
+  const { selectedId } = useEditor();
   const isSelected = selectedId === data.id;
 
   const roadConfig = getRoadConfig(data.roadType);
   const roadWidth = data.width || roadConfig.width;
   const roadColor = data.color || roadConfig.color;
+  const roadElevation = data.elevation || roadConfig.elevation;
+  const roadThickness = data.thickness || roadConfig.thickness;
 
   // Debug logging
   console.log("Road component rendering:", {
@@ -27,19 +28,22 @@ export function Road({ data }: RoadComponentProps) {
     roadType: data.roadType,
     width: roadWidth,
     color: roadColor,
+    elevation: roadElevation,
+    thickness: roadThickness,
+    isSelected,
   });
 
   // Move useMemo hooks before any early returns
   const geometries = useMemo(() => {
     console.log("Generating road geometry for points:", data.points);
-    const result = generateRoadGeometry(data.points, roadWidth);
+    const result = generateRoadGeometry(data.points, roadWidth, roadElevation, roadThickness);
     console.log("Generated geometry:", {
       hasGeometry: !!result.roadGeometry,
       vertexCount: result.roadGeometry.attributes.position?.count || 0,
       pathLength: result.roadPath.length,
     });
     return result;
-  }, [data.points, roadWidth]);
+  }, [data.points, roadWidth, roadElevation, roadThickness]);
 
   const hasValidGeometry = useMemo(() => {
     const isValid =
@@ -61,7 +65,7 @@ export function Road({ data }: RoadComponentProps) {
     return null;
   }
 
-  console.log("Road rendering successfully");
+  console.log("Road rendering successfully with ID:", data.id);
 
   return (
     <group
@@ -70,38 +74,45 @@ export function Road({ data }: RoadComponentProps) {
       rotation={data.rotation}
       scale={data.scale}
     >
-      {/* Road surface - FIXED: Complete mesh with geometry */}
-      <mesh geometry={geometries.roadGeometry}>
+      {/* Road surface - FIXED: Complete mesh with geometry and elevation */}
+      <mesh geometry={geometries.roadGeometry} userData={{ objectId: data.id }}>
         <meshStandardMaterial
-          color="#ff00ff" // Bright magenta for debugging - change back to roadColor when working
+          color={roadColor}
           emissive={
             isSelected ? new THREE.Color(0x004400) : new THREE.Color(0x000000)
           }
           emissiveIntensity={isSelected ? 0.2 : 0}
-          side={THREE.DoubleSide} // Ensure both sides render
-          wireframe={false} // Set to true to see wireframe
+          side={THREE.DoubleSide}
+          wireframe={false}
+          roughness={0.8}
+          metalness={0.1}
         />
       </mesh>
 
-      {/* Road markings (center line, side lines) */}
+      {/* Road markings (center line, side lines, curbs) */}
       <RoadMarkings
         centerLinePoints={geometries.centerLinePoints}
         roadPath={geometries.roadPath}
         roadConfig={roadConfig}
         roadWidth={roadWidth}
+        roadElevation={roadElevation}
       />
 
       {/* Selection indicators */}
-      <RoadSelectionIndicators points={data.points} isSelected={isSelected} />
+      <RoadSelectionIndicators 
+        points={data.points} 
+        isSelected={isSelected}
+        roadElevation={roadElevation}
+      />
 
       {/* Debug: Show bounding box if selected */}
       {isSelected && (
-        <mesh>
-          <boxGeometry args={[roadWidth, 0.1, 10]} />
+        <mesh position={[0, roadElevation + roadThickness / 2, 0]}>
+          <boxGeometry args={[roadWidth, roadThickness, 10]} />
           <meshStandardMaterial
             color="#ff0000"
             transparent
-            opacity={0.2}
+            opacity={0.1}
             wireframe
           />
         </mesh>
@@ -110,4 +121,3 @@ export function Road({ data }: RoadComponentProps) {
   );
 }
 
-export default Road;

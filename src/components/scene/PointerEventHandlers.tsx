@@ -108,7 +108,7 @@ export function usePointerEventHandlers({
             gridWidth: 1,
             gridDepth: 1,
             gridHeight: 0.1,
-          } as Partial<SceneObj> & { type: ObjType });
+          } as unknown as Partial<SceneObj> & { type: ObjType });
         }
         setTempRoadPoints([]);
         setIsDrawingRoad(false);
@@ -147,7 +147,7 @@ export function usePointerEventHandlers({
           selectedTool,
           gridWidth,
           gridDepth,
-          objects as unknown as SceneObject[],
+          objects,
           gridSize,
           snap
         )

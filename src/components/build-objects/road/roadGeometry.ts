@@ -1,4 +1,4 @@
-// src/components/build-objects/road/roadGeometry.ts - Fixed Final
+// src/components/build-objects/road/roadGeometry.ts - Fixed with Elevation and Thickness
 import * as THREE from "three";
 import { RoadPoint } from "@/store/storeTypes";
 
@@ -27,29 +27,29 @@ export function createBezierCurve(
   return points;
 }
 
-export function generateRoadPath(roadPoints: RoadPoint[]): THREE.Vector3[] {
+export function generateRoadPath(roadPoints: RoadPoint[], elevation: number = 0): THREE.Vector3[] {
   console.log("🛤️ Generating road path from points:", roadPoints);
 
   if (roadPoints.length === 0) return [];
 
   if (roadPoints.length === 1) {
-    return [new THREE.Vector3(roadPoints[0].x, 0, roadPoints[0].z)];
+    return [new THREE.Vector3(roadPoints[0].x, elevation, roadPoints[0].z)];
   }
 
   const roadPath: THREE.Vector3[] = [];
 
   // Always add the first point
-  roadPath.push(new THREE.Vector3(roadPoints[0].x, 0, roadPoints[0].z));
+  roadPath.push(new THREE.Vector3(roadPoints[0].x, elevation, roadPoints[0].z));
 
   for (let i = 0; i < roadPoints.length - 1; i++) {
-    const start = new THREE.Vector3(roadPoints[i].x, 0, roadPoints[i].z);
-    const end = new THREE.Vector3(roadPoints[i + 1].x, 0, roadPoints[i + 1].z);
+    const start = new THREE.Vector3(roadPoints[i].x, elevation, roadPoints[i].z);
+    const end = new THREE.Vector3(roadPoints[i + 1].x, elevation, roadPoints[i + 1].z);
 
     if (roadPoints[i].controlPoint) {
       // Create curved segment
       const control = new THREE.Vector3(
         roadPoints[i].controlPoint!.x,
-        0,
+        elevation,
         roadPoints[i].controlPoint!.z
       );
       const curvePoints = createBezierCurve(start, end, control, 10);
@@ -61,13 +61,15 @@ export function generateRoadPath(roadPoints: RoadPoint[]): THREE.Vector3[] {
     }
   }
 
-  console.log("🛤️ Generated path with", roadPath.length, "points");
+  console.log("🛤️ Generated path with", roadPath.length, "points at elevation", elevation);
   return roadPath;
 }
 
 export function generateRoadGeometry(
   roadPoints: RoadPoint[],
-  width: number
+  width: number,
+  elevation: number = 0,
+  thickness: number = 0.1
 ): RoadGeometryResult {
   const emptyResult: RoadGeometryResult = {
     roadGeometry: new THREE.BufferGeometry(),
@@ -78,6 +80,8 @@ export function generateRoadGeometry(
   console.log("🏗️ Generating road geometry:", {
     pointCount: roadPoints.length,
     width,
+    elevation,
+    thickness,
   });
 
   if (roadPoints.length < 2) {
@@ -85,7 +89,7 @@ export function generateRoadGeometry(
     return emptyResult;
   }
 
-  const roadPath = generateRoadPath(roadPoints);
+  const roadPath = generateRoadPath(roadPoints, elevation);
   if (roadPath.length < 2) {
     console.log("❌ Generated path too short");
     return emptyResult;
@@ -95,9 +99,9 @@ export function generateRoadGeometry(
   const indices: number[] = [];
   const halfWidth = width / 2;
 
-  console.log("🔧 Creating road strip with width:", width);
+  console.log("🔧 Creating road strip with width:", width, "elevation:", elevation, "thickness:", thickness);
 
-  // Generate road strip vertices
+  // Generate road strip vertices for both top and bottom surfaces
   for (let i = 0; i < roadPath.length; i++) {
     const point = roadPath[i];
 
@@ -138,28 +142,70 @@ export function generateRoadGeometry(
       direction.x
     ).normalize();
 
-    // Create left and right edge points
-    const leftPoint = point
+    // Create top surface points (at road elevation + thickness)
+    const topY = elevation + thickness;
+    const topLeftPoint = point
       .clone()
       .add(perpendicular.clone().multiplyScalar(halfWidth));
-    const rightPoint = point
+    topLeftPoint.y = topY;
+    const topRightPoint = point
       .clone()
       .add(perpendicular.clone().multiplyScalar(-halfWidth));
+    topRightPoint.y = topY;
 
-    // Add vertices (left first, then right)
-    vertices.push(leftPoint.x, leftPoint.y, leftPoint.z);
-    vertices.push(rightPoint.x, rightPoint.y, rightPoint.z);
+    // Create bottom surface points (at road elevation)
+    const bottomY = elevation;
+    const bottomLeftPoint = point
+      .clone()
+      .add(perpendicular.clone().multiplyScalar(halfWidth));
+    bottomLeftPoint.y = bottomY;
+    const bottomRightPoint = point
+      .clone()
+      .add(perpendicular.clone().multiplyScalar(-halfWidth));
+    bottomRightPoint.y = bottomY;
+
+    // Add vertices (top left, top right, bottom left, bottom right)
+    vertices.push(
+      topLeftPoint.x, topLeftPoint.y, topLeftPoint.z,
+      topRightPoint.x, topRightPoint.y, topRightPoint.z,
+      bottomLeftPoint.x, bottomLeftPoint.y, bottomLeftPoint.z,
+      bottomRightPoint.x, bottomRightPoint.y, bottomRightPoint.z
+    );
   }
 
   // Generate triangle indices for road surface
   for (let i = 0; i < roadPath.length - 1; i++) {
-    const baseIndex = i * 2;
+    const baseIndex = i * 4;
 
-    // Create two triangles for each road segment
-    // First triangle: bottom-left, top-left, bottom-right
-    indices.push(baseIndex, baseIndex + 2, baseIndex + 1);
-    // Second triangle: bottom-right, top-left, top-right
-    indices.push(baseIndex + 1, baseIndex + 2, baseIndex + 3);
+    // Top surface triangles
+    indices.push(baseIndex, baseIndex + 4, baseIndex + 1);
+    indices.push(baseIndex + 1, baseIndex + 4, baseIndex + 5);
+
+    // Bottom surface triangles (reversed winding for correct normals)
+    indices.push(baseIndex + 2, baseIndex + 3, baseIndex + 6);
+    indices.push(baseIndex + 3, baseIndex + 7, baseIndex + 6);
+
+    // Left side triangles
+    indices.push(baseIndex, baseIndex + 2, baseIndex + 4);
+    indices.push(baseIndex + 2, baseIndex + 6, baseIndex + 4);
+
+    // Right side triangles
+    indices.push(baseIndex + 1, baseIndex + 5, baseIndex + 3);
+    indices.push(baseIndex + 3, baseIndex + 5, baseIndex + 7);
+  }
+
+  // Add end caps
+  if (roadPath.length >= 2) {
+    const startBase = 0;
+    const endBase = (roadPath.length - 1) * 4;
+
+    // Start cap
+    indices.push(startBase, startBase + 2, startBase + 1);
+    indices.push(startBase + 1, startBase + 2, startBase + 3);
+
+    // End cap
+    indices.push(endBase, endBase + 1, endBase + 2);
+    indices.push(endBase + 1, endBase + 3, endBase + 2);
   }
 
   console.log("📐 Generated geometry:", {
@@ -186,7 +232,9 @@ export function generateRoadGeometry(
 // Simplified preview geometry for drawing mode
 export function generatePreviewGeometry(
   roadPoints: RoadPoint[],
-  width: number
+  width: number,
+  elevation: number = 0.01,
+  thickness: number = 0.02
 ): RoadGeometryResult {
   if (roadPoints.length === 0) {
     return {
@@ -197,19 +245,20 @@ export function generatePreviewGeometry(
   }
 
   if (roadPoints.length === 1) {
-    // Single point - small circle
+    // Single point - small circle with elevation
     const point = roadPoints[0];
     const circleGeometry = new THREE.CircleGeometry(0.3, 8);
     circleGeometry.rotateX(-Math.PI / 2);
-    circleGeometry.translate(point.x, 0.01, point.z);
+    circleGeometry.translate(point.x, elevation + thickness, point.z);
 
     return {
       roadGeometry: circleGeometry,
-      centerLinePoints: [new THREE.Vector3(point.x, 0.01, point.z)],
-      roadPath: [new THREE.Vector3(point.x, 0.01, point.z)],
+      centerLinePoints: [new THREE.Vector3(point.x, elevation + thickness, point.z)],
+      roadPath: [new THREE.Vector3(point.x, elevation + thickness, point.z)],
     };
   }
 
-  // For multiple points in preview, use the same logic as final geometry
-  return generateRoadGeometry(roadPoints, width);
+  // For multiple points in preview, use the same logic as final geometry but with preview settings
+  return generateRoadGeometry(roadPoints, width, elevation, thickness);
 }
+

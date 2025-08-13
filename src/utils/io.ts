@@ -1,4 +1,4 @@
-import { SceneObj } from "../store/useStore";
+import { SceneObj } from "../store";
 
 export function downloadJSON(filename: string, data: unknown) {
   const json = JSON.stringify(data, null, 2);

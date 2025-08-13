@@ -1,7 +1,7 @@
 // src/components/bars/side/components/object/RoadProperties.tsx - Refactored
 import React, { useState } from "react";
-import { RoadObj, SceneObj } from "@/store";
-import CollapsibleSection from "../../CollapsibleSection";
+import { RoadObj, SceneObj } from "@/store/storeTypes";
+import { CollapsibleSection } from "../../";
 import {
   RoadStatisticsDisplay,
   RoadAdvancedFeatures,

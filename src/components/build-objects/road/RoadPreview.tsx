@@ -1,4 +1,4 @@
-// src/components/build-objects/road/RoadPreview.tsx - Fixed
+// src/components/build-objects/road/RoadPreview.tsx - Fixed with Elevation
 import React, { useMemo } from "react";
 import { RoadPoint } from "@/store/storeTypes";
 import { generatePreviewGeometry } from "./roadGeometry";
@@ -8,6 +8,7 @@ interface RoadPreviewProps {
   width: number;
   color: string;
   opacity?: number;
+  elevation?: number;
 }
 
 export function RoadPreview({
@@ -15,12 +16,15 @@ export function RoadPreview({
   width,
   color,
   opacity = 0.5,
+  elevation = 0.01,
 }: RoadPreviewProps) {
   const geometries = useMemo(() => {
-    return generatePreviewGeometry(points, width);
-  }, [points, width]);
+    return generatePreviewGeometry(points, width, elevation, 0.02);
+  }, [points, width, elevation]);
 
   if (points.length === 0) return null;
+
+  const previewHeight = elevation + 0.05; // Show preview slightly above final road
 
   return (
     <group>
@@ -40,7 +44,7 @@ export function RoadPreview({
       {points.map((point, index) => (
         <group key={index}>
           {/* Small point markers */}
-          <mesh position={[point.x, 0.05, point.z]}>
+          <mesh position={[point.x, previewHeight, point.z]}>
             <sphereGeometry args={[0.1]} />
             <meshStandardMaterial
               color={
@@ -59,7 +63,7 @@ export function RoadPreview({
           {point.controlPoint && (
             <>
               <mesh
-                position={[point.controlPoint.x, 0.05, point.controlPoint.z]}
+                position={[point.controlPoint.x, previewHeight, point.controlPoint.z]}
               >
                 <boxGeometry args={[0.15, 0.05, 0.15]} />
                 <meshStandardMaterial
@@ -76,10 +80,10 @@ export function RoadPreview({
                     args={[
                       new Float32Array([
                         point.x,
-                        0.05,
+                        previewHeight,
                         point.z,
                         point.controlPoint.x,
-                        0.05,
+                        previewHeight,
                         point.controlPoint.z,
                       ]),
                       3,
@@ -124,3 +128,4 @@ export function RoadPreview({
 }
 
 export default RoadPreview;
+

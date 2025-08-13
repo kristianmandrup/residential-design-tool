@@ -1,8 +1,8 @@
 // src/components/bars/side/components/object/RoadBasicProperties.tsx
 import React from "react";
-import { RoadObj, SceneObj } from "@/store";
+import { RoadObj, SceneObj } from "@/store/storeTypes";
 import { NumberField, SelectField, ColorField } from "@/components/generic";
-import PositionInputs from "../../PositionInputs";
+import { PositionInputs } from "../../";
 import { ROAD_TYPE_OPTIONS, ROAD_TYPE_CONFIGS } from "./roadUtils";
 
 interface RoadBasicPropertiesProps {

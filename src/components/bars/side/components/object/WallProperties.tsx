@@ -1,8 +1,7 @@
 import React from "react";
-import { WallObj, SceneObj } from "@/store";
-import GridSizeFields from "../GridSizeFields";
-import { NumberField } from "../../../../generic";
-import PositionInputs from "../PositionInputs";
+import { WallObj, SceneObj } from "@/store/storeTypes";
+import { PositionInputs, GridSizeFields } from "../";
+import { NumberField } from "@/components/generic";
 
 interface WallPropertiesProps {
   selected: WallObj;

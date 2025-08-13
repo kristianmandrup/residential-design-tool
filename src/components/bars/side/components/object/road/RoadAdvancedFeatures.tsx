@@ -1,6 +1,6 @@
 // src/components/bars/side/components/object/RoadAdvancedFeatures.tsx
 import React from "react";
-import { RoadObj, SceneObj } from "@/store";
+import { RoadObj, SceneObj } from "@/store/storeTypes";
 import { reverseRoadDirection, cleanupRoadPoints } from "./roadUtils";
 
 interface RoadAdvancedFeaturesProps {

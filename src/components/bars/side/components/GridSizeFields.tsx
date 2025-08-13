@@ -18,7 +18,7 @@ interface GridSizeFieldsProps {
   showHeight?: boolean;
 }
 
-export default function GridSizeFields({
+export function GridSizeFields({
   gridWidth = 2,
   gridDepth = 2,
   gridHeight = 1,

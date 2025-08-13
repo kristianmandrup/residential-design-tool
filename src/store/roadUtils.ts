@@ -95,6 +95,8 @@ export const ROAD_TYPE_CONFIGS = {
   residential: {
     width: 6,
     color: "#404040",
+    elevation: 0.02, // Slightly above ground
+    thickness: 0.08, // Road thickness
     maxSpeed: 50,
     lanes: 2,
     markings: {
@@ -107,6 +109,8 @@ export const ROAD_TYPE_CONFIGS = {
   highway: {
     width: 8,
     color: "#383838",
+    elevation: 0.03, // Slightly higher for highways
+    thickness: 0.1,
     maxSpeed: 120,
     lanes: 4,
     markings: {
@@ -119,6 +123,8 @@ export const ROAD_TYPE_CONFIGS = {
   dirt: {
     width: 4,
     color: "#8B4513",
+    elevation: 0.01, // Minimal elevation for dirt roads
+    thickness: 0.05,
     maxSpeed: 30,
     lanes: 1,
     markings: {
@@ -131,6 +137,8 @@ export const ROAD_TYPE_CONFIGS = {
   pedestrian: {
     width: 2,
     color: "#606060",
+    elevation: 0.015, // Slight elevation for walkways
+    thickness: 0.04,
     maxSpeed: 5,
     lanes: 0,
     markings: {
@@ -185,3 +193,4 @@ export class RoadUtils {
     return { x, z };
   }
 }
+

@@ -5,19 +5,23 @@ import { RoadPoint } from "@/store/storeTypes";
 interface RoadSelectionIndicatorsProps {
   points: RoadPoint[];
   isSelected: boolean;
+  roadElevation: number;
 }
 
 export function RoadSelectionIndicators({
   points,
   isSelected,
+  roadElevation,
 }: RoadSelectionIndicatorsProps) {
   if (!isSelected) return null;
+
+  const indicatorHeight = roadElevation + 0.15; // Show indicators above road surface
 
   return (
     <group>
       {/* Point indicators */}
       {points.map((point, index) => (
-        <mesh key={index} position={[point.x, 0.1, point.z]}>
+        <mesh key={index} position={[point.x, indicatorHeight, point.z]}>
           <sphereGeometry args={[0.15]} />
           <meshStandardMaterial
             color={
@@ -39,7 +43,7 @@ export function RoadSelectionIndicators({
           point.controlPoint && (
             <group key={`control-${index}`}>
               <mesh
-                position={[point.controlPoint.x, 0.1, point.controlPoint.z]}
+                position={[point.controlPoint.x, indicatorHeight, point.controlPoint.z]}
               >
                 <boxGeometry args={[0.2, 0.1, 0.2]} />
                 <meshStandardMaterial
@@ -56,10 +60,10 @@ export function RoadSelectionIndicators({
                     args={[
                       new Float32Array([
                         point.x,
-                        0.1,
+                        indicatorHeight,
                         point.z,
                         point.controlPoint.x,
-                        0.1,
+                        indicatorHeight,
                         point.controlPoint.z,
                       ]),
                       3,
@@ -74,3 +78,4 @@ export function RoadSelectionIndicators({
     </group>
   );
 }
+
