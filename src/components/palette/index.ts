@@ -1,1 +1,2 @@
-export { default as PaletteItem } from "./PaletteItem";
+export { PaletteItem } from "./PaletteItem";
+export { QuickStats } from "./QuickStats";

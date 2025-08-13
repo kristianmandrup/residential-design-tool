@@ -6,6 +6,4 @@ export { default as Water } from "./WaterObj";
 export { default as Roof } from "./RoofObj";
 
 // Road utilities
-export { default as RoadPreview } from "./RoadPreview";
-export * from "./RoadDrawing";
-export * from "./RoadIntersectionDetection";
+export * from "./road";

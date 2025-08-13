@@ -152,9 +152,9 @@ function generateRoadGeometry(
 
     if (roadPoints[i].controlPoint) {
       const control = new THREE.Vector3(
-        roadPoints[i].controlPoint.x,
+        roadPoints[i].controlPoint?.x,
         0,
-        roadPoints[i].controlPoint.z
+        roadPoints[i].controlPoint?.z
       );
       const curvePoints = createBezierCurve(start, end, control);
       roadPath.push(...curvePoints);
@@ -365,7 +365,22 @@ export function Road({ data }: RoadComponentProps) {
 
       {/* Center line - dashed */}
       {centerLineDashedGeometry && (
-        <line geometry={centerLineDashedGeometry}>
+        <line>
+          <bufferGeometry attach="geometry">
+            <bufferAttribute
+              attach="attributes-position"
+              args={[
+                new Float32Array(
+                  geometries.centerLinePoints.flatMap((p) => [
+                    p.x,
+                    p.y + 0.001,
+                    p.z,
+                  ])
+                ),
+                3,
+              ]}
+            />
+          </bufferGeometry>
           <lineBasicMaterial
             color={roadConfig.centerLineColor}
             linewidth={roadConfig.centerLineWidth * 10}
@@ -375,7 +390,22 @@ export function Road({ data }: RoadComponentProps) {
 
       {/* Center line - solid */}
       {centerLineSolidGeometry && (
-        <line geometry={centerLineSolidGeometry}>
+        <line>
+          <bufferGeometry attach="geometry">
+            <bufferAttribute
+              attach="attributes-position"
+              args={[
+                new Float32Array(
+                  geometries.centerLinePoints.flatMap((p) => [
+                    p.x,
+                    p.y + 0.001,
+                    p.z,
+                  ])
+                ),
+                3,
+              ]}
+            />
+          </bufferGeometry>
           <lineBasicMaterial
             color={roadConfig.centerLineColor}
             linewidth={roadConfig.centerLineWidth * 10}
@@ -385,7 +415,18 @@ export function Road({ data }: RoadComponentProps) {
 
       {/* Side lines */}
       {sideLineGeometries.left && (
-        <line geometry={sideLineGeometries.left}>
+        <line>
+          <bufferGeometry attach="geometry">
+            <bufferAttribute
+              attach="attributes-position"
+              args={[
+                new Float32Array(
+                  sideLineGeometries.left.attributes.position.array
+                ),
+                3,
+              ]}
+            />
+          </bufferGeometry>
           <lineBasicMaterial
             color={roadConfig.sideLineColor}
             linewidth={roadConfig.sideLineWidth * 10}
@@ -393,7 +434,18 @@ export function Road({ data }: RoadComponentProps) {
         </line>
       )}
       {sideLineGeometries.right && (
-        <line geometry={sideLineGeometries.right}>
+        <line>
+          <bufferGeometry attach="geometry">
+            <bufferAttribute
+              attach="attributes-position"
+              args={[
+                new Float32Array(
+                  sideLineGeometries.right.attributes.position.array
+                ),
+                3,
+              ]}
+            />
+          </bufferGeometry>
           <lineBasicMaterial
             color={roadConfig.sideLineColor}
             linewidth={roadConfig.sideLineWidth * 10}
@@ -429,10 +481,10 @@ export function Road({ data }: RoadComponentProps) {
                   </mesh>
                   {/* Control line */}
                   <line>
-                    <bufferGeometry>
+                    <bufferGeometry attach="geometry">
                       <bufferAttribute
                         attach="attributes-position"
-                        array={
+                        args={[
                           new Float32Array([
                             point.x,
                             0.1,
@@ -440,10 +492,9 @@ export function Road({ data }: RoadComponentProps) {
                             point.controlPoint.x,
                             0.1,
                             point.controlPoint.z,
-                          ])
-                        }
-                        count={2}
-                        itemSize={3}
+                          ]),
+                          3,
+                        ]}
                       />
                     </bufferGeometry>
                     <lineBasicMaterial color="#ffff00" />
