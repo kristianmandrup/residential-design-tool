@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Camera, Scene } from "three";
+import { Camera, Scene, Vector3 } from "three";
+import { Tool } from "@/contexts/ToolContext";
+import { RoadPoint } from "@/store/storeTypes";
 
 export interface PointerEventContext {
   canvas: HTMLCanvasElement;
@@ -8,6 +10,16 @@ export interface PointerEventContext {
   gridSize: number;
   snap: boolean;
   objects: any[];
+}
+
+export interface PointerEventData {
+  event: PointerEvent;
+  worldPosition: Vector3;
+  snappedPosition: Vector3;
+  button: number;
+  shiftKey: boolean;
+  ctrlKey: boolean;
+  altKey: boolean;
 }
 
 export interface StoreActions {
@@ -23,9 +35,30 @@ export interface SelectionState {
   selectedIds: string[];
 }
 
-import { Tool } from "@/contexts/ToolContext";
-
 export interface ToolState {
   selectedTool: Tool;
   setSelectedTool: (tool: Tool) => void;
+}
+
+// Road drawing state and actions (unified)
+export interface RoadDrawingState {
+  isDrawingRoad: boolean;
+  tempRoadPoints: RoadPoint[];
+  lastClickTime: number | null;
+  selectedRoadType: "residential" | "highway" | "dirt" | "pedestrian";
+  roadWidth: number;
+  snapToGrid: boolean;
+}
+
+export interface RoadDrawingActions {
+  setIsDrawingRoad: (isDrawing: boolean) => void;
+  setTempRoadPoints: (points: RoadPoint[]) => void;
+  setLastClickTime: (time: number | null) => void;
+  setSelectedRoadType: (
+    type: "residential" | "highway" | "dirt" | "pedestrian"
+  ) => void;
+  setRoadWidth: (width: number) => void;
+  setSnapToGrid: (snap: boolean) => void;
+  cancelRoadDrawing: () => void;
+  undoLastRoadPoint: () => void;
 }

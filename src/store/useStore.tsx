@@ -1,17 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/store/useStore.tsx - Updated with migration utilities
 "use client";
 import React from "react";
 import { create } from "zustand";
-import { nanoid } from "nanoid";
-import {
-  SceneObj,
-  StoreState,
-  BuildingObj,
-  TreeObj,
-  WallObj,
-  RoadObj,
-  WaterObj,
-  Snapshot,
-} from "./storeTypes";
+import { SceneObj, StoreState, RoadObj, Snapshot } from "./storeTypes";
+import { ensureCompleteSceneObj, validateRoadObj } from "@/utils/typeMigration";
 
 const initialObjects: SceneObj[] = [
   {
@@ -29,8 +22,11 @@ const initialObjects: SceneObj[] = [
       { windowsEnabled: true, wallColor: "#d9d9d9", name: "Ground Floor" },
       { windowsEnabled: true, wallColor: "#d9d9d9", name: "First Floor" },
     ],
+    gridWidth: 2,
+    gridDepth: 2,
+    gridHeight: 2,
   },
-]; // start with one building in center
+];
 
 export const useStore = create<StoreState>((set, get) => ({
   objects: initialObjects,
@@ -42,94 +38,53 @@ export const useStore = create<StoreState>((set, get) => ({
   future: [],
 
   addObject: (obj) => {
-    const id = nanoid();
-    const newObj = {
-      id,
-      type: obj.type,
-      position: (obj.position ?? [0, 0, 0]) as [number, number, number],
-      rotation: (obj.rotation ?? [0, 0, 0]) as [number, number, number],
-      scale: (obj.scale ?? [1, 1, 1]) as [number, number, number],
-      // Grid-based defaults
-      gridWidth: obj.gridWidth,
-      gridDepth: obj.gridDepth,
-      gridHeight: obj.gridHeight,
-      // type-specific defaults
-      ...(obj.type === "building"
-        ? {
-            floors: (obj as Partial<BuildingObj>).floors ?? 1,
-            color: (obj as Partial<BuildingObj>).color ?? "#d9d9d9",
-            roofType: (obj as Partial<BuildingObj>).roofType ?? "gabled",
-            roofColor: (obj as Partial<BuildingObj>).roofColor ?? "#666666",
-            floorProperties: Array.from(
-              { length: (obj as Partial<BuildingObj>).floors ?? 1 },
-              (_, i) => ({
-                windowsEnabled: true,
-                wallColor: (obj as Partial<BuildingObj>).color ?? "#d9d9d9",
-                name: i === 0 ? "Ground Floor" : `Floor ${i}`,
-              })
-            ),
-            gridWidth: (obj as Partial<BuildingObj>).gridWidth ?? 2,
-            gridDepth: (obj as Partial<BuildingObj>).gridDepth ?? 2,
-            gridHeight: (obj as Partial<BuildingObj>).gridHeight ?? 1,
-          }
-        : {}),
-      ...(obj.type === "tree"
-        ? {
-            foliageColor: (obj as Partial<TreeObj>).foliageColor ?? "#2E8B57",
-            gridWidth: (obj as Partial<TreeObj>).gridWidth ?? 1,
-            gridDepth: (obj as Partial<TreeObj>).gridDepth ?? 1,
-            gridHeight: (obj as Partial<TreeObj>).gridHeight ?? 1,
-          }
-        : {}),
-      ...(obj.type === "wall"
-        ? {
-            length: (obj as Partial<WallObj>).length ?? 3,
-            height: (obj as Partial<WallObj>).height ?? 1,
-            gridWidth: (obj as Partial<WallObj>).gridWidth ?? 2,
-            gridDepth: (obj as Partial<WallObj>).gridDepth ?? 1,
-            gridHeight: (obj as Partial<WallObj>).gridHeight ?? 1,
-          }
-        : {}),
-      ...(obj.type === "road"
-        ? {
-            points: (obj as Partial<RoadObj>).points ?? [
-              { x: -2, z: 0 },
-              { x: 2, z: 0 }
-            ],
-            width: (obj as Partial<RoadObj>).width ?? 6,
-            roadType: (obj as Partial<RoadObj>).roadType ?? "residential",
-            color: (obj as Partial<RoadObj>).color ?? "#404040",
-            gridWidth: (obj as Partial<RoadObj>).gridWidth ?? 4,
-            gridDepth: (obj as Partial<RoadObj>).gridDepth ?? 1,
-            gridHeight: (obj as Partial<RoadObj>).gridHeight ?? 0.1,
-          }
-        : {}),
-      ...(obj.type === "water"
-        ? {
-            radius: (obj as Partial<WaterObj>).radius ?? 1,
-            gridWidth: (obj as Partial<WaterObj>).gridWidth ?? 1,
-            gridDepth: (obj as Partial<WaterObj>).gridDepth ?? 1,
-            gridHeight: (obj as Partial<WaterObj>).gridHeight ?? 0.1,
-          }
-        : {}),
-    } as SceneObj;
+    try {
+      // 🔥 USE MIGRATION UTILITY HERE - ensures complete object
+      const completeObj = ensureCompleteSceneObj(obj);
 
-    // snapshot for undo
-    get().saveSnapshot();
-    set((s) => ({
-      objects: [...s.objects, newObj],
-      selectedId: id,
-      future: [],
-    }));
-    return id;
+      // Additional validation for roads
+      if (
+        completeObj.type === "road" &&
+        !validateRoadObj(completeObj as RoadObj)
+      ) {
+        console.error("❌ Invalid road object, not adding:", completeObj);
+        return "";
+      }
+
+      console.log("✅ Adding complete object:", completeObj);
+
+      // snapshot for undo
+      get().saveSnapshot();
+      set((s) => ({
+        objects: [...s.objects, completeObj],
+        selectedId: completeObj.id,
+        future: [],
+      }));
+
+      return completeObj.id;
+    } catch (error) {
+      console.error("❌ Failed to add object:", error, obj);
+      return "";
+    }
   },
 
   updateObject: (id, patch) => {
     get().saveSnapshot();
     set((s) => ({
-      objects: s.objects.map((o) =>
-        o.id === id ? ({ ...o, ...patch } as SceneObj) : o
-      ),
+      objects: s.objects.map((o) => {
+        if (o.id === id) {
+          const updated = { ...o, ...patch } as SceneObj;
+
+          // Validate roads after update
+          if (updated.type === "road" && !validateRoadObj(updated as RoadObj)) {
+            console.warn("⚠️ Road update resulted in invalid road:", updated);
+            return o; // Don't apply invalid update
+          }
+
+          return updated;
+        }
+        return o;
+      }),
       future: [],
     }));
   },
@@ -194,12 +149,31 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   overwriteAll: (objects) => {
-    get().saveSnapshot();
-    set(() => ({ objects, selectedId: null, future: [] }));
+    // 🔥 USE MIGRATION UTILITY HERE - when loading saved data
+    try {
+      const migratedObjects = objects
+        .map((obj) => {
+          try {
+            return ensureCompleteSceneObj(obj as any);
+          } catch (error) {
+            console.warn("Failed to migrate object, skipping:", error, obj);
+            return null;
+          }
+        })
+        .filter((obj): obj is SceneObj => obj !== null);
+
+      console.log(
+        `📁 Loaded ${migratedObjects.length}/${objects.length} objects`
+      );
+
+      get().saveSnapshot();
+      set(() => ({ objects: migratedObjects, selectedId: null, future: [] }));
+    } catch (error) {
+      console.error("❌ Failed to load objects:", error);
+    }
   },
 }));
 
-// optional provider wrapper (not necessary but keeps API consistent)
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => <>{children}</>;

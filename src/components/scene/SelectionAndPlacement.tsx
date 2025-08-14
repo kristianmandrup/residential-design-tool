@@ -2,68 +2,51 @@ import { useEffect, useCallback } from "react";
 import { useThree } from "@react-three/fiber";
 import { useEditor } from "@/contexts/EditorContext";
 import { useTool } from "@/contexts/ToolContext";
-import { useRoadDrawing } from "@/contexts/RoadDrawingContext";
-import { usePointerEventSystem } from "./pointer-events";
+import { useSimplifiedPointerEvents } from "./pointer-events/useSimplifiedPointerEvents";
 import { RoadPreview } from "@/components/build-objects/road";
 import { PointerEventContext, StoreActions, SelectionState, ToolState } from "./pointer-events/types";
 
 export function SelectionAndPlacement() {
   const { camera, gl, scene } = useThree();
 
-  // Editor context (replaces old store)
-  const {
-    objects,
-    addObject,
-    updateObject,
-    removeObject,
-    selectedId,
-    selectedIds,
-    setSelectedId,
-    setSelectedIds,
-    gridSize,
-    snapEnabled,
-  } = useEditor();
-
-  // Tool context
-  const { selectedTool, setSelectedTool } = useTool();
-
-  // Road drawing context
-  const roadDrawing = useRoadDrawing();
+  // Context hooks
+  const editor = useEditor();
+  const tool = useTool();
 
   // Create context objects for the pointer event system
   const pointerContext: PointerEventContext = {
     canvas: gl.domElement,
     camera,
     scene,
-    gridSize,
-    snap: snapEnabled,
-    objects,
+    gridSize: editor.gridSize,
+    snap: editor.snapEnabled,
+    objects: editor.objects,
   };
 
   const storeActions: StoreActions = {
-    addObject,
-    updateObject,
-    removeObject,
-    setSelectedId,
-    setSelectedIds,
+    addObject: editor.addObject,
+    updateObject: editor.updateObject,
+    removeObject: editor.removeObject,
+    setSelectedId: editor.setSelectedId,
+    setSelectedIds: editor.setSelectedIds,
   };
 
   const selectionState: SelectionState = {
-    selectedId,
-    selectedIds,
+    selectedId: editor.selectedId,
+    selectedIds: editor.selectedIds,
   };
 
   const toolState: ToolState = {
-    selectedTool: selectedTool || "select",
-    setSelectedTool,
+    selectedTool: tool.selectedTool || "select",
+    setSelectedTool: tool.setSelectedTool,
   };
 
-  // Initialize the pointer event system
+  // Initialize the simplified pointer event system
   const {
     handlePointerDown,
     handleKeyDown,
-    getRoadPreview,
-  } = usePointerEventSystem(
+    roadDrawing,
+  } = useSimplifiedPointerEvents(
     pointerContext,
     storeActions,
     selectionState,
@@ -71,12 +54,10 @@ export function SelectionAndPlacement() {
   );
 
   // Create stable event handlers
-  const handlePointerDownCallback = useCallback(handlePointerDown, [
-    handlePointerDown,
-  ]);
+  const handlePointerDownCallback = useCallback(handlePointerDown, [handlePointerDown]);
   const handleKeyDownCallback = useCallback(handleKeyDown, [handleKeyDown]);
   const handleContextMenuCallback = useCallback((e: Event) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent right-click context menu
   }, []);
 
   // Set up event listeners
@@ -88,8 +69,8 @@ export function SelectionAndPlacement() {
     canvas.tabIndex = 0;
     canvas.style.outline = "none";
 
+    // Add event listeners
     canvas.addEventListener("pointerdown", handlePointerDownCallback);
-    canvas.addEventListener("keydown", handleKeyDownCallback);
     canvas.addEventListener("contextmenu", handleContextMenuCallback);
 
     // Focus canvas to receive keyboard events
@@ -97,24 +78,21 @@ export function SelectionAndPlacement() {
 
     return () => {
       canvas.removeEventListener("pointerdown", handlePointerDownCallback);
-      canvas.removeEventListener("keydown", handleKeyDownCallback);
       canvas.removeEventListener("contextmenu", handleContextMenuCallback);
     };
-  }, [
-    gl,
-    handlePointerDownCallback,
-    handleKeyDownCallback,
-    handleContextMenuCallback,
-  ]);
+  }, [gl, handlePointerDownCallback, handleContextMenuCallback]);
 
-  // Handle window-level keyboard events as backup
+  // Handle window-level keyboard events
   useEffect(() => {
     const handleWindowKeyDown = (event: KeyboardEvent) => {
-      // Only handle if no other element has focus or if canvas has focus
-      if (
-        document.activeElement === gl.domElement ||
-        document.activeElement === document.body
-      ) {
+      // Only handle if canvas has focus or no other input is focused
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement && 
+        (activeElement.tagName === 'INPUT' || 
+         activeElement.tagName === 'TEXTAREA' || 
+         activeElement.hasAttribute('contenteditable'));
+
+      if (!isInputFocused) {
         handleKeyDownCallback(event);
       }
     };
@@ -123,10 +101,10 @@ export function SelectionAndPlacement() {
     return () => {
       window.removeEventListener("keydown", handleWindowKeyDown);
     };
-  }, [handleKeyDownCallback, gl.domElement]);
+  }, [handleKeyDownCallback]);
 
   // Get road preview data
-  const roadPreview = getRoadPreview();
+  const roadPreview = roadDrawing.getRoadPreview();
 
   return (
     <>
@@ -139,6 +117,18 @@ export function SelectionAndPlacement() {
           opacity={0.7}
           elevation={roadPreview.elevation}
         />
+      )}
+
+      {/* Debug info in development */}
+      {process.env.NODE_ENV === "development" && roadDrawing.isDrawingRoad && (
+        <mesh position={[0, 0.5, 0]}>
+          <sphereGeometry args={[0.1]} />
+          <meshStandardMaterial 
+            color="#ffff00" 
+            emissive="#ffff00" 
+            emissiveIntensity={0.5} 
+          />
+        </mesh>
       )}
     </>
   );

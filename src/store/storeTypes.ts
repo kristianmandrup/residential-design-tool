@@ -41,6 +41,7 @@ export interface BuildingObj extends SceneBase {
 export interface TreeObj extends SceneBase {
   type: "tree";
   foliageColor?: string;
+  treeType?: string;
   gridWidth?: number;
   gridDepth?: number;
   gridHeight?: number;
@@ -50,6 +51,8 @@ export interface WallObj extends SceneBase {
   type: "wall";
   length: number;
   height: number;
+  thickness?: number;
+  color?: string;
   direction?: number;
   gridWidth?: number;
   gridDepth?: number;
@@ -68,6 +71,8 @@ export interface RoadObj extends SceneBase {
   width: number;
   roadType: "residential" | "highway" | "dirt" | "pedestrian";
   color?: string;
+  elevation?: number;
+  thickness?: number;
   direction?: number;
   gridWidth?: number;
   gridDepth?: number;
@@ -76,7 +81,11 @@ export interface RoadObj extends SceneBase {
 
 export interface WaterObj extends SceneBase {
   type: "water";
-  radius: number;
+  radius?: number;
+  width?: number;
+  depth?: number;
+  waveHeight?: number;
+  transparency?: number;
   shape?: "circular" | "rectangular";
   direction?: number;
   gridWidth?: number;
@@ -123,4 +132,33 @@ export interface StoreState {
   undo: () => void;
   redo: () => void;
   overwriteAll: (objects: SceneObj[]) => void;
+}
+
+// Additional utility types for better type safety
+export type RoadType = "residential" | "highway" | "dirt" | "pedestrian";
+export type WaterShape = "circular" | "rectangular";
+
+// Type guards
+export function isRoadObj(obj: SceneObj): obj is RoadObj {
+  return obj.type === "road";
+}
+
+export function isBuildingObj(obj: SceneObj): obj is BuildingObj {
+  return obj.type === "building";
+}
+
+export function isTreeObj(obj: SceneObj): obj is TreeObj {
+  return obj.type === "tree";
+}
+
+export function isWallObj(obj: SceneObj): obj is WallObj {
+  return obj.type === "wall";
+}
+
+export function isWaterObj(obj: SceneObj): obj is WaterObj {
+  return obj.type === "water";
+}
+
+export function isIntersectionObj(obj: SceneObj): obj is IntersectionObj {
+  return obj.type === "intersection";
 }
