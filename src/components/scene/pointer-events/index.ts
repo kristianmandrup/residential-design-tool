@@ -1,3 +1,3 @@
-export * from './types';
-export * from './useSimplifiedPointerEvents';
-export * from './utils';
+export * from "./types";
+export * from "./useGenericPointerEvents";
+export * from "./utils";

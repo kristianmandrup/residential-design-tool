@@ -5,5 +5,3 @@ export * from "./RoadSelectionIndicators";
 export * from "./roadConfig";
 export * from "./roadGeometry";
 export * from "./types";
-export * from "./unifiedRoadDrawing";
-

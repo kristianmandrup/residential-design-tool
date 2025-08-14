@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Camera, Scene, Vector3 } from "three";
 import { Tool } from "@/contexts/ToolContext";
-import { RoadPoint } from "@/store/storeTypes";
+import { RoadPoint, SceneObj } from "@/store/storeTypes";
 
 export interface PointerEventContext {
   canvas: HTMLCanvasElement;
@@ -28,6 +28,7 @@ export interface StoreActions {
   removeObject: (id: string) => void;
   setSelectedId: (id: string | null) => void;
   setSelectedIds: (ids: string[]) => void;
+  getAllObjects: () => SceneObj[];
 }
 
 export interface SelectionState {

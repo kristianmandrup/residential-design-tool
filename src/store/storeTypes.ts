@@ -1,3 +1,5 @@
+import { DrawingPoint } from "@/components/build-objects/shared";
+
 export type RoofType = "flat" | "gabled" | "hipped";
 export type ObjType =
   | "building"
@@ -11,12 +13,15 @@ export interface SceneBase {
   id: string;
   name: string;
   type: ObjType;
+  points: DrawingPoint[];
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
   gridWidth?: number;
   gridDepth?: number;
   gridHeight?: number;
+  elevation?: number;
+  thickness?: number;
 }
 
 export interface FloorProperties {
@@ -80,6 +85,7 @@ export interface RoadObj extends SceneBase {
 }
 
 export interface WaterObj extends SceneBase {
+  color: string;
   type: "water";
   radius?: number;
   width?: number;
