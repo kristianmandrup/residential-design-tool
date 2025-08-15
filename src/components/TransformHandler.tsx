@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // components/TransformHandler.tsx
 import { TransformControls } from "@react-three/drei";
-import { useStore, StoreState } from "@/store";
+import { useSceneStore, StoreState } from "@/store";
 import { useRef, useEffect } from "react";
 
 export default function TransformHandler() {
-  const selectedId = useStore((s: StoreState) => s.selectedId);
-  const objects = useStore((s: StoreState) => s.objects);
-  const updateObject = useStore((s: StoreState) => s.updateObject);
+  const selectedId = useSceneStore((s: StoreState) => s.selectedId);
+  const objects = useSceneStore((s: StoreState) => s.objects);
+  const updateObject = useSceneStore((s: StoreState) => s.updateObject);
 
   const selected = objects.find((o: any) => o.id === selectedId);
   const ref = useRef<any>(null);

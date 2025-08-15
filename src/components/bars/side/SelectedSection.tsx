@@ -1,15 +1,15 @@
 import React from "react";
-import { useStore } from "@/store/useStore";
+import { useSceneStore } from "@/store/useSceneStore";
 import { ObjectPropertiesSection } from "./ObjectPropertiesSection";
 import { ObjectBaseProps } from "./components/ObjectBaseProps";
 import Section from "../../generic/Section";
 import InputField from "../../generic/InputField";
 
 export default function SelectedSection() {
-  const objects = useStore((s) => s.objects);
-  const selectedId = useStore((s) => s.selectedId);
-  const updateObject = useStore((s) => s.updateObject);
-  const gridSize = useStore((s) => s.gridSize);
+  const objects = useSceneStore((s) => s.objects);
+  const selectedId = useSceneStore((s) => s.selectedId);
+  const updateObject = useSceneStore((s) => s.updateObject);
+  const gridSize = useSceneStore((s) => s.gridSize);
 
   const selectedObject = objects.find((o) => o.id === selectedId);
   const gridX = selectedObject

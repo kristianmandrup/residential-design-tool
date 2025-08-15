@@ -1,16 +1,18 @@
 "use client";
 import React from "react";
 import dynamic from "next/dynamic";
-import { Sidebar } from "@/components/bars";
+import { Sidebar } from "@/components/sidebar";
 import { EditorProvider } from "@/contexts/EditorContext";
-import { StoreProvider } from "@/store/useStore";
+import { StoreProvider } from "@/store/useSceneStore";
 import { ToolProvider } from "@/contexts/ToolContext";
 import { LayoutProvider } from "@/contexts/LayoutContext";
-import { RoadDrawingProvider } from "@/contexts/RoadDrawingContext";
 import { useKeyboardShortcuts } from "@/components/scene/KeyboardShortcuts";
+import { GenericDrawingProvider } from "@/contexts";
 
 // dynamic import of Scene to avoid SSR issues
-const Scene = dynamic(() => import("@/components/MainScene"), { ssr: false });
+const Scene = dynamic(() => import("@/components/EnhancedScene"), {
+  ssr: false,
+});
 
 function KeyboardHandler() {
   const { handleKeyDown } = useKeyboardShortcuts();
@@ -42,7 +44,7 @@ export default function Home() {
     <StoreProvider>
       <EditorProvider>
         <ToolProvider>
-          <RoadDrawingProvider>
+          <GenericDrawingProvider>
             <LayoutProvider>
               <div className="flex w-screen h-screen">
                 <div className="relative flex-1">
@@ -54,7 +56,7 @@ export default function Home() {
               </div>
               <KeyboardHandler />
             </LayoutProvider>
-          </RoadDrawingProvider>
+          </GenericDrawingProvider>
         </ToolProvider>
       </EditorProvider>
     </StoreProvider>

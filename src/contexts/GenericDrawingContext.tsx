@@ -5,7 +5,7 @@ import React, {
   useCallback,
   ReactNode,
 } from "react";
-import { DrawingPoint } from "@/components/build-objects/shared/genericDrawing";
+import { DrawingPoint } from "@/components/objects/shared/genericDrawing";
 
 // Generic drawing state
 export interface GenericDrawingState {

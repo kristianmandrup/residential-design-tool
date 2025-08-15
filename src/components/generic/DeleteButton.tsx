@@ -1,5 +1,5 @@
 import React from "react";
-import { useStore } from "@/store/useStore";
+import { useSceneStore } from "@/store/useSceneStore";
 import Button from "./Button";
 
 interface DeleteButtonProps {
@@ -7,7 +7,7 @@ interface DeleteButtonProps {
 }
 
 export default function DeleteButton({ selectedId }: DeleteButtonProps) {
-  const removeObject = useStore((s) => s.removeObject);
+  const removeObject = useSceneStore((s) => s.removeObject);
 
   return (
     <Button

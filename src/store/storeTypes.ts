@@ -1,4 +1,4 @@
-import { DrawingPoint } from "@/components/build-objects/shared";
+import { DrawingPoint } from "@/components/objects/shared";
 
 export type RoofType = "flat" | "gabled" | "hipped";
 export type ObjType =
@@ -13,7 +13,7 @@ export interface SceneBase {
   id: string;
   name: string;
   type: ObjType;
-  points: DrawingPoint[];
+  points?: DrawingPoint[];
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];

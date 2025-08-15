@@ -3,12 +3,12 @@
 import { useCallback, useMemo } from "react";
 import * as THREE from "three";
 import { useGenericDrawingContext } from "@/contexts/GenericDrawingContext";
-import { useEnhancedGenericDrawing } from "@/components/build-objects/shared/enhancedGenericDrawing";
-import { enhancedRoadDrawingBehavior } from "@/components/build-objects/road/enhancedRoadDrawingBehavior";
+import { useEnhancedGenericDrawing } from "@/components/objects/shared/enhancedGenericDrawing";
+import { enhancedRoadDrawingBehavior } from "@/components/objects/behaviors/enhancedRoadDrawingBehavior";
 import {
   enhancedWallDrawingBehavior,
   enhancedWaterDrawingBehavior,
-} from "@/components/build-objects/wall/enhancedWallDrawingBehavior";
+} from "@/components/objects/behaviors/enhancedWallDrawingBehavior";
 import {
   EnhancedGenericDrawingState,
   EnhancedGenericDrawingActions,
@@ -17,7 +17,7 @@ import {
   ObjectVisualConfig,
   GenericIntersection,
   GenericObjectData,
-} from "@/components/build-objects/shared/types";
+} from "@/components/objects/shared/types";
 import {
   PointerEventContext,
   StoreActions,

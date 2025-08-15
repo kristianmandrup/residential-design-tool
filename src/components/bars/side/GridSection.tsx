@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { useStore } from "@/store/useStore";
+import { useSceneStore } from "@/store/useSceneStore";
 import { SwitchField } from "@/components/generic/SwitchField";
 import { useGrid } from "@/contexts/GridContext";
 import Button from "@/components/generic/Button";
 
 export default function GridSection() {
   const [isOpen, setIsOpen] = useState(false);
-  const snap = useStore((s) => s.snapEnabled);
-  const toggleSnap = useStore((s) => s.toggleSnap);
+  const snap = useSceneStore((s) => s.snapEnabled);
+  const toggleSnap = useSceneStore((s) => s.toggleSnap);
   const { showGrid, toggleGrid } = useGrid();
 
   const toggleDropdown = () => setIsOpen(!isOpen);

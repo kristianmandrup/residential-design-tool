@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useStore } from "@/store/useStore";
+import { useSceneStore } from "@/store/useSceneStore";
 import SearchSection from "@/components/bars/side/SearchSection";
 import GridSection from "@/components/bars/side/GridSection";
 import ProjectSection from "@/components/bars/side/ProjectSection";
@@ -12,7 +12,7 @@ export default function TopMenu() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Store state for undo/redo
-  const { past, future, undo, redo } = useStore();
+  const { past, future, undo, redo } = useSceneStore();
 
   // Close dropdown when clicking outside
   useEffect(() => {

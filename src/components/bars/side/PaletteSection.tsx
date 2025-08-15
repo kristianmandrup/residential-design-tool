@@ -2,7 +2,7 @@
 import React from "react";
 import Section from "../../generic/Section";
 import { Tool, useTool } from "@/contexts/ToolContext";
-import { useStore } from "@/store/useStore";
+import { useSceneStore } from "@/store/useSceneStore";
 import { QuickStats, PaletteItem } from "@/components/palette";
 
 interface ToolItem {
@@ -67,7 +67,7 @@ const TOOL_ITEMS: ToolItem[] = [
 
 export default function PaletteSection() {
   const { selectedTool, setSelectedTool } = useTool();
-  const objects = useStore((s) => s.objects);
+  const objects = useSceneStore((s) => s.objects);
 
   const getObjectCount = (type: string) => {
     return objects.filter((obj) => obj.type === type).length;

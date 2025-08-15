@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { useStore } from "@/store/useStore";
+import { useSceneStore } from "@/store/useSceneStore";
 import { downloadJSON, readJSONFile } from "@/utils/io";
 import { SceneObj } from "@/store/storeTypes";
 import InputField from "../../generic/InputField";
@@ -7,8 +7,8 @@ import Button from "../../generic/Button";
 import Section from "../../generic/Section";
 
 export default function ProjectSection() {
-  const objects = useStore((s) => s.objects);
-  const overwriteAll = useStore((s) => s.overwriteAll);
+  const objects = useSceneStore((s) => s.objects);
+  const overwriteAll = useSceneStore((s) => s.overwriteAll);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [projectName, setProjectName] = useState("");
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);

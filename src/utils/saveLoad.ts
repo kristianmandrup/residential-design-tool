@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // utils/saveLoad.ts - Example save/load system with migration
-import { useStore } from "@/store";
+import { useSceneStore } from "@/store";
 import { SceneObj } from "@/store/storeTypes";
 import { ensureCompleteSceneObj } from "@/utils/typeMigration";
 
@@ -11,6 +11,9 @@ export interface SaveData {
   metadata?: {
     name?: string;
     description?: string;
+    isAutoSave?: boolean;
+    savedAt?: string;
+    objectCounts?: Record<string, number>;
   };
 }
 
@@ -152,7 +155,7 @@ export class SceneSaveLoad {
 
 // Example React hook for using this system
 export function useSaveLoad() {
-  const { objects, overwriteAll } = useStore();
+  const { objects, overwriteAll } = useSceneStore();
 
   const saveScene = (filename?: string) => {
     try {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStore } from "@/store/useStore";
+import { useSceneStore } from "@/store/useSceneStore";
 import { SceneObj } from "@/store/storeTypes";
 import InputField from "../../generic/InputField";
 import Button from "../../generic/Button";
@@ -9,8 +9,8 @@ import SelectField from "../../generic/SelectField";
 
 export default function SearchSection() {
   const [isOpen, setIsOpen] = useState(false);
-  const objects = useStore((s) => s.objects);
-  const setSelectedId = useStore((s) => s.setSelectedId);
+  const objects = useSceneStore((s) => s.objects);
+  const setSelectedId = useSceneStore((s) => s.setSelectedId);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("any");
 
@@ -78,7 +78,7 @@ export default function SearchSection() {
                       setIsOpen(false);
                     }}
                     className={`p-3 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0 ${
-                      obj.id === useStore.getState().selectedId
+                      obj.id === useSceneStore.getState().selectedId
                         ? "bg-blue-100 border-blue-300"
                         : ""
                     }`}

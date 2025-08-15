@@ -1,17 +1,16 @@
 import React, { useRef, useEffect, useMemo } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Grid, Environment } from "@react-three/drei";
-import { useStore } from "@/store";
+import { useSceneStore } from "@/store";
 import { useEnhancedGenericPointerEvents } from "@/hooks/useEnhancedGenericPointerEvents";
 import { useGenericDrawingContext } from "@/contexts/GenericDrawingContext";
-import { SceneObj, RoadObj, WallObj } from "@/store/storeTypes";
 
 // Enhanced components
-import GenericPreview from "@/components/build-objects/shared/GenericPreview";
+import GenericPreview from "@/components/objects/shared/GenericPreview";
 import {
   createGenericIntersectionComponent,
   processGenericObjectSystem,
-} from "@/components/build-objects/shared/GenericIntersectionDetection";
+} from "@/components/objects/shared/GenericIntersectionDetection";
 
 // Enhanced object components
 import {
@@ -20,18 +19,19 @@ import {
   EnhancedWall,
   Building,
   Tree,
-} from "@/components/build-objects";
-
-// UI components
-import { ToolPalette } from "@/components/ui/ToolPalette";
+} from "@/components/objects";
 
 // Import enhanced drawing behaviors
-import { enhancedRoadDrawingBehavior } from "@/components/build-objects/road/enhancedRoadDrawingBehavior";
+import { enhancedRoadDrawingBehavior } from "@/components/objects/behaviors/enhancedRoadDrawingBehavior";
 import {
   enhancedWallDrawingBehavior,
   enhancedWaterDrawingBehavior,
-} from "@/components/build-objects/wall/enhancedWallDrawingBehavior";
-import { EnhancedDrawingControls, IntersectionPanel } from "./ui";
+} from "@/components/objects/behaviors";
+import {
+  EnhancedDrawingControls,
+  IntersectionPanel,
+  ToolPalette,
+} from "./sidebar";
 
 interface EnhancedSceneProps {
   showGrid?: boolean;
@@ -42,7 +42,7 @@ interface EnhancedSceneProps {
 function SceneContent({ showGrid = true }: { showGrid?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { camera, scene } = useThree();
-  const store = useStore();
+  const store = useSceneStore();
   const drawingContext = useGenericDrawingContext();
 
   // Setup enhanced pointer events
@@ -223,7 +223,7 @@ export function EnhancedScene({
   enablePerformanceOptimizations = true,
 }: EnhancedSceneProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const store = useStore();
+  const store = useSceneStore();
   const drawingContext = useGenericDrawingContext();
 
   // Get active drawing state for UI
@@ -315,19 +315,57 @@ export function EnhancedScene({
       {/* UI Overlays */}
       <div className="ui-overlays">
         {/* Tool Palette */}
-        <ToolPalette
-          selectedTool={"select" as const}
-          onSelectTool={() => {}}
-          drawingState={{
-            isDrawingRoad: drawingContext.isDrawingRoad,
-            isDrawingWall: drawingContext.isDrawingWall,
-            isDrawingWater: drawingContext.isDrawingWater,
-          }}
-        />
+        <ToolPalette compact={true} />
 
         {/* Enhanced Drawing Controls - only show when drawing */}
-        {isAnyDrawing && pointerEvents && (
-          <EnhancedDrawingControls pointerEvents={pointerEvents} />
+        {isAnyDrawing && (
+          <EnhancedDrawingControls
+            roadDrawing={{
+              isDrawing: drawingContext.isDrawingRoad,
+              tempPoints: drawingContext.tempRoadPoints,
+              selectedType: drawingContext.selectedRoadType,
+              showPreview: true,
+              showIntersections: true,
+              autoOptimize: true,
+              undoLastPoint: drawingContext.undoLastRoadPoint,
+              cancelDrawing: drawingContext.cancelRoadDrawing,
+              finishDrawing: () => {},
+              togglePreview: () => {},
+              toggleIntersections: () => {},
+              toggleAutoOptimize: () => {},
+              setSelectedType: drawingContext.setSelectedRoadType,
+            }}
+            wallDrawing={{
+              isDrawing: drawingContext.isDrawingWall,
+              tempPoints: drawingContext.tempWallPoints,
+              selectedType: drawingContext.selectedWallType,
+              showPreview: true,
+              showIntersections: true,
+              autoOptimize: true,
+              undoLastPoint: drawingContext.undoLastWallPoint,
+              cancelDrawing: drawingContext.cancelWallDrawing,
+              finishDrawing: () => {},
+              togglePreview: () => {},
+              toggleIntersections: () => {},
+              toggleAutoOptimize: () => {},
+              setSelectedType: drawingContext.setSelectedWallType,
+            }}
+            waterDrawing={{
+              isDrawing: drawingContext.isDrawingWater,
+              tempPoints: drawingContext.tempWaterPoints,
+              selectedType: drawingContext.selectedWaterType,
+              showPreview: true,
+              showIntersections: true,
+              autoOptimize: true,
+              undoLastPoint: drawingContext.undoLastWaterPoint,
+              cancelDrawing: drawingContext.cancelWaterDrawing,
+              finishDrawing: () => {},
+              togglePreview: () => {},
+              toggleIntersections: () => {},
+              toggleAutoOptimize: () => {},
+              setSelectedType: drawingContext.setSelectedWaterType,
+            }}
+          />
         )}
 
         {/* Intersection Panel - only show when intersections exist */}
