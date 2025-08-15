@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { useSceneStore } from "@/store/useSceneStore";
-import { Building, Tree, Wall, Road, Water } from "@/components/objects";
+import { Building, Road, Tree, Wall, Water } from "@/components/objects";
 import { SceneObj } from "@/store/storeTypes";
+
 export function SceneObjects() {
   const objects = useSceneStore((s) => s.objects);
   const selectedId = useSceneStore((s) => s.selectedId);

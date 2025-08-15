@@ -5,6 +5,7 @@ OUTPUT_FILE="ai-input.txt"
 INTERACTIVE=false
 CLEAR_FILE=false
 QUIET_MODE=false
+MISSING_SUMMARY_PATHS=()
 
 # Function to show usage
 show_usage() {
@@ -16,6 +17,7 @@ show_usage() {
   echo ""
   echo "Examples:"
   echo "  $0 src/components                    # Process directory, show content"
+  echo "  $0 src/utils=                        # Process only Summary.md in directory"
   echo "  $0 -c src/file.tsx                  # Clear file first, then process"
   echo "  $0 -q src/components                # Process quietly (only to file)"
   echo "  $0 -cq src/components               # Clear file, process quietly"
@@ -63,7 +65,27 @@ process_path() {
   path=$(echo "$path" | tr -d '\r\n\t ')
   [ -z "$path" ] && return
 
-  if [ -d "$path" ]; then
+  # Check if path ends with "="
+  if [[ "$path" == *= ]]; then
+    local clean_path="${path%=}" # Remove trailing "="
+    if [ -d "$clean_path" ]; then
+      local summary_file="$clean_path/Summary.md"
+      if [ -f "$summary_file" ]; then
+        echo "File: $summary_file"
+        timeout 5 cat "$summary_file" 2>/dev/null || echo "Error: Could not read $summary_file (skipped)"
+        echo ""
+        echo ""
+      else
+        echo "Warning: No Summary.md found in $clean_path"
+        echo ""
+        MISSING_SUMMARY_PATHS+=("$clean_path")
+      fi
+    else
+      echo "Error: Invalid path $clean_path (not a directory)"
+      echo ""
+      MISSING_SUMMARY_PATHS+=("$clean_path")
+    fi
+  elif [ -d "$path" ]; then
     if [ -z "$(find "$path" -maxdepth 1 -type f)" ]; then
       echo "Directory $path is empty or contains no files."
       echo ""
@@ -74,13 +96,13 @@ process_path() {
         echo "File: $file"
         timeout 5 cat "$file" 2>/dev/null || echo "Error: Could not read $file (skipped)"
         echo ""
-        echo ""        
+        echo ""
       done
   elif [ -f "$path" ]; then
     echo "File: $path"
     timeout 5 cat "$path" 2>/dev/null || echo "Error: Could not read $path (skipped)"
     echo ""
-    echo ""    
+    echo ""
   else
     echo "Error: Invalid path $path (not a file or directory)"
     echo ""
@@ -90,11 +112,16 @@ process_path() {
 run_processing() {
   local file_count=0
   local processed_paths=()
-  
+
   # Count files and collect paths for summary
   for path in "$@"; do
     processed_paths+=("$path")
-    if [ -f "$path" ]; then
+    if [[ "$path" == *= ]]; then
+      local clean_path="${path%=}"
+      if [ -d "$clean_path" ] && [ -f "$clean_path/Summary.md" ]; then
+        ((file_count++))
+      fi
+    elif [ -f "$path" ]; then
       ((file_count++))
     elif [ -d "$path" ]; then
       local dir_files=$(find "$path" -type f -not -path "*/.git/*" -not -path "*/node_modules/*" | wc -l)
@@ -112,10 +139,10 @@ run_processing() {
         process_path "$path"
       done
     } >> "$OUTPUT_FILE"
-    
+
     # Copy to clipboard
     pbcopy < "$OUTPUT_FILE"
-    
+
     echo "✅ Processing complete!"
   else
     # Normal mode: output to both console and file
@@ -124,22 +151,31 @@ run_processing() {
         process_path "$path"
       done
     } | tee -a "$OUTPUT_FILE" | pbcopy
-    
+
     echo "✅ Processing complete!"
   fi
-  
+
   # Show summary
   echo ""
   echo "📄 Output saved to: $(pwd)/$OUTPUT_FILE"
   echo "📋 Content copied to clipboard"
-  
+
   # Show file size
   if [ -f "$OUTPUT_FILE" ]; then
     local file_size=$(du -h "$OUTPUT_FILE" | cut -f1)
     local line_count=$(wc -l < "$OUTPUT_FILE")
     echo "📊 File size: $file_size, Lines: $line_count"
   fi
-  
+
+  # Show warnings for missing Summary.md files
+  if [ ${#MISSING_SUMMARY_PATHS[@]} -gt 0 ]; then
+    echo ""
+    echo "⚠️ Warnings: The following paths with '=' postfix had no Summary.md file:"
+    for missing_path in "${MISSING_SUMMARY_PATHS[@]}"; do
+      echo "  - $missing_path"
+    done
+  fi
+
   echo ""
 }
 
@@ -147,7 +183,8 @@ interactive_loop() {
   echo "Interactive mode: paste paths, press Enter twice to process, empty line to quit."
   echo "Current mode: $(if $QUIET_MODE; then echo 'Quiet (file only)'; else echo 'Normal (console + file)'; fi)"
   echo ""
-  
+  echo "Note: Paths ending with '=' will only process Summary.md (if present)."
+
   while true; do
     batch=()
     echo "Enter paths (press Enter twice when done, or empty line to quit):"

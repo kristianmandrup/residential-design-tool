@@ -1,11 +1,14 @@
-The following is my current Residential Design system:  I would like you to restructure and cleanup so that it is more concise and well stuctured.  
-Currently there are some old files and new files, such as RoadObj (old) and EnhancedRoadObj (new). 
-Keep only the new and improved files and make it clear which files are to be removed and so on.   
-There are also a number of component files (.tsx) that currently uses basic CSS but should use Tailwind 4 CSS.  
-Furthermore I would like the sidebar to be improved, with a more intuitive and user-friendly interface, with better organisation and grouping of objects.  
-For both road, wall, water, building and trees, I would like to see the object system improved, with better visualization and interaction, and a more intuitive and user-friendly interface. 
-Each object that can be drawn should have a specific panel that is activated an object of that type is selected.  
-I've also recently had problems selecting objects in the scene, so please add better debugging to determine any object selection problem or fix any errors that you find.  
+Folder Summaries:
+
+Create a Summary.md in that summarises the types, components and functions exported and their interfaces, so that an AI 
+can quickly get an overview of what it can use and how, without consulting the files.
+Do this for each of the folders:
+src/components/panels
+src/components/objects
+src/components/generic
+
+
+Chat AI output instructions:
 In general make improvements and suggestions as you see fit. 
 
 // File: [relative/path/to/file.extension]

@@ -7,10 +7,13 @@ import { useSceneStore } from "@/store/useSceneStore";
 import { WATER_CONFIGS as ENHANCED_WATER_CONFIGS } from "./configs";
 import { GenericMarkings } from "./shared/GenericMarkings";
 import { GenericSelectionIndicators } from "./shared/GenericSelectionIndicators";
+
+export const Water = EnhancedWater;
+
 interface EnhancedWaterProps {
   data: WaterObj;
 }
-export function EnhancedWater({ data }: EnhancedWaterProps) {
+function EnhancedWater({ data }: EnhancedWaterProps) {
   const groupRef = useRef<THREE.Group>(null);
   const selectedId = useSceneStore((s) => s.selectedId);
   const isSelected = selectedId === data.id;

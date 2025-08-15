@@ -6,7 +6,7 @@ interface RoofObjProps {
   width?: number;
   depth?: number;
 }
-export function RoofObj({
+export function Roof({
   type = "flat",
   color = "#666",
   width = 2.4,

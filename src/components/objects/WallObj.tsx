@@ -7,10 +7,13 @@ import { useSceneStore } from "@/store/useSceneStore";
 import { WALL_CONFIGS as ENHANCED_WALL_CONFIGS } from "./configs";
 import { GenericMarkings } from "./shared/GenericMarkings";
 import { GenericSelectionIndicators } from "./shared/GenericSelectionIndicators";
+
+export const Wall = EnhancedWall;
 interface EnhancedWallProps {
   data: WallObj;
 }
-export function EnhancedWall({ data }: EnhancedWallProps) {
+
+function EnhancedWall({ data }: EnhancedWallProps) {
   const groupRef = useRef<THREE.Group>(null);
   const selectedId = useSceneStore((s) => s.selectedId);
   const isSelected = selectedId === data.id;

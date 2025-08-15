@@ -7,10 +7,12 @@ import { GenericMarkings } from "./shared/GenericMarkings";
 import { GenericSelectionIndicators } from "./shared/GenericSelectionIndicators";
 import { ROAD_CONFIGS as ENHANCED_ROAD_CONFIGS } from "./configs";
 
+export const Road = EnhancedRoad;
 interface EnhancedRoadProps {
   data: RoadObj;
 }
-export function EnhancedRoad({ data }: EnhancedRoadProps) {
+
+function EnhancedRoad({ data }: EnhancedRoadProps) {
   const selectedId = useSceneStore((s) => s.selectedId);
   const isSelected = selectedId === data.id;
   const roadConfig = ENHANCED_ROAD_CONFIGS[data.roadType || "residential"];
