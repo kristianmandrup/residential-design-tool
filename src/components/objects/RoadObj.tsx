@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
 import { useSceneStore } from "@/store/useSceneStore";
+import { useElevation } from "@/contexts/ElevationContext";
 import { RoadObj } from "@/store/storeTypes";
-import { generateRoadGeometry } from "./geometry/roadGeometry";
+import { generateGenericGeometry, type GeometryConfig } from "./geometry";
 import { GenericMarkings } from "./shared/GenericMarkings";
 import { GenericSelectionIndicators } from "./shared/GenericSelectionIndicators";
 import { ROAD_CONFIGS as ENHANCED_ROAD_CONFIGS } from "./configs";
@@ -14,13 +15,23 @@ interface EnhancedRoadProps {
 
 function EnhancedRoad({ data }: EnhancedRoadProps) {
   const selectedId = useSceneStore((s) => s.selectedId);
+  const { getGridElevation } = useElevation();
   const isSelected = selectedId === data.id;
   const roadConfig = ENHANCED_ROAD_CONFIGS[data.roadType || "residential"];
   const roadWidth = data.width || roadConfig.width;
   const roadColor = data.color || roadConfig.color;
-  const roadElevation = data.elevation ?? roadConfig.elevation;
   const roadThickness = data.thickness ?? roadConfig.thickness;
   const visualConfig = roadConfig.visualConfig;
+
+  // Calculate final elevation: grid elevation + object elevation
+  const gridElevation = useMemo(() => {
+    if (!data.points || data.points.length === 0) return 0;
+    // Use the first point to get grid elevation
+    const firstPoint = data.points[0];
+    return getGridElevation(firstPoint.x, firstPoint.z);
+  }, [data.points, getGridElevation]);
+
+  const roadElevation = (data.elevation ?? 0) + gridElevation;
   console.log("🛣️ Rendering Enhanced Road:", {
     id: data.id,
     type: data.roadType,
@@ -33,18 +44,27 @@ function EnhancedRoad({ data }: EnhancedRoadProps) {
     if (!data.points || data.points.length < 2) {
       console.warn("❌ Road insufficient points:", data.points);
       return {
-        roadGeometry: new THREE.BufferGeometry(),
+        mainGeometry: new THREE.BufferGeometry(),
         centerLinePoints: [],
-        roadPath: [],
+        pathPoints: [],
       };
     }
     try {
-      return generateRoadGeometry(
-        data.points,
-        roadWidth,
-        roadElevation,
-        roadThickness
-      );
+      // Use generic geometry system for roads
+      const config: GeometryConfig = {
+        type: "road",
+        width: roadWidth,
+        thickness: roadThickness,
+        elevation: roadElevation,
+        segments: 20,
+      };
+
+      const geometryResult = generateGenericGeometry(data.points, config);
+      return {
+        roadGeometry: geometryResult.mainGeometry,
+        centerLinePoints: geometryResult.centerLinePoints,
+        roadPath: geometryResult.pathPoints,
+      };
     } catch (error) {
       console.error("❌ Road geometry error:", error);
       return {
@@ -55,12 +75,12 @@ function EnhancedRoad({ data }: EnhancedRoadProps) {
     }
   }, [data.points, roadWidth, roadElevation, roadThickness]);
   const hasValidGeometry = useMemo(() => {
-    const positionAttribute = geometries.roadGeometry.attributes.position;
+    const positionAttribute = geometries.roadGeometry?.attributes.position;
     return !!(
       data.points.length >= 2 &&
       positionAttribute &&
       positionAttribute.count > 0 &&
-      geometries.roadGeometry.index &&
+      geometries.roadGeometry?.index &&
       geometries.roadGeometry.index.count > 0
     );
   }, [data.points.length, geometries.roadGeometry]);
@@ -105,7 +125,7 @@ function EnhancedRoad({ data }: EnhancedRoadProps) {
       {geometries.centerLinePoints.length > 0 && (
         <GenericMarkings
           centerLinePoints={geometries.centerLinePoints}
-          pathPoints={geometries.roadPath}
+          pathPoints={geometries.roadPath || []}
           visualConfig={visualConfig}
           objectWidth={roadWidth}
           objectElevation={roadElevation}

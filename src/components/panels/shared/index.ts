@@ -1,3 +1,9 @@
 export { CollapsibleSection } from "./CollapsibleSection";
 export { PositionInputs } from "./PositionInputs";
-export { GridSizeFields } from "./GridSizeFields";Now, update your panel components to use the new shared components:
+export { GridSizeFields } from "./GridSizeFields";
+export { ElevationControl } from "./ElevationControl";
+export { QuickActions } from "./QuickActions";
+export { StatisticsGrid } from "./StatisticsGrid";
+export { ColorPalette } from "./ColorPalette";
+export { TypeSelector } from "./TypeSelector";
+export { DimensionSlider } from "./DimensionSlider";

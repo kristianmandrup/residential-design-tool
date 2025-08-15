@@ -1,15 +1,24 @@
 // File: src/components/objects/BuildingObj.tsx
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import { BuildingObj, useSceneStore } from "@/store";
+import { useElevation } from "@/contexts/ElevationContext";
 import * as THREE from "three";
-import { RoofObj } from "./RoofObj";
+import { Roof } from "./RoofObj";
 interface BuildingProps {
   data: BuildingObj;
 }
 export function Building({ data }: BuildingProps) {
   const groupRef = useRef<THREE.Group | null>(null);
   const selectedId = useSceneStore((s) => s.selectedId);
+  const { getGridElevation } = useElevation();
   const isSelected = selectedId === data.id;
+
+  // Calculate final elevation: grid elevation + object elevation
+  const gridElevation = useMemo(() => {
+    return getGridElevation(data.position[0], data.position[2]);
+  }, [data.position, getGridElevation]);
+
+  const finalElevation = (data.elevation ?? 0) + gridElevation;
   useEffect(() => {
     if (!groupRef.current) return;
     groupRef.current.traverse((child) => {
@@ -111,7 +120,11 @@ export function Building({ data }: BuildingProps) {
         return (
           <group key={floorIndex}>
             <mesh
-              position={[0, floorIndex * floorH + floorH / 2, 0]}
+              position={[
+                0,
+                floorIndex * floorH + floorH / 2 + finalElevation,
+                0,
+              ]}
               userData={{
                 objectId: data.id,
                 objectType: "building",
@@ -140,8 +153,8 @@ export function Building({ data }: BuildingProps) {
         );
       })}
 
-      <group position={[0, data.floors * floorH, 0]}>
-        <RoofObj
+      <group position={[0, data.floors * floorH + finalElevation, 0]}>
+        <Roof
           type={data.roofType}
           color={data.roofColor}
           width={width}
@@ -150,7 +163,7 @@ export function Building({ data }: BuildingProps) {
       </group>
 
       {isSelected && (
-        <mesh position={[0, (data.floors * floorH) / 2, 0]}>
+        <mesh position={[0, (data.floors * floorH) / 2 + finalElevation, 0]}>
           <boxGeometry
             args={[width + 0.2, data.floors * floorH + 0.2, depth + 0.2]}
           />

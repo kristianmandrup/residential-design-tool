@@ -1,9 +1,40 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
+import { useElevation } from "@/contexts/ElevationContext";
 
-export function Ground() {
+interface GroundProps {
+  gridSize?: number;
+  segments?: number;
+}
+
+export function Ground({ gridSize = 100, segments = 100 }: GroundProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
+  const { gridElevation } = useElevation();
+
+  // Create elevation-based geometry
+  const elevationGeometry = useMemo(() => {
+    const geometry = new THREE.PlaneGeometry(
+      gridSize,
+      gridSize,
+      segments,
+      segments
+    );
+    const positions = geometry.attributes.position.array as Float32Array;
+
+    // Apply grid elevation to vertices
+    for (let i = 0; i < positions.length; i += 3) {
+      const x = positions[i];
+      const z = positions[i + 2];
+
+      // Get grid elevation for this position
+      const elevation = gridElevation[`${Math.round(x)},${Math.round(z)}`] || 0;
+      positions[i + 1] = elevation; // Set y position
+    }
+
+    geometry.computeVertexNormals();
+    return geometry;
+  }, [gridSize, segments, gridElevation]);
 
   useEffect(() => {
     const createGrassTexture = () => {
@@ -48,23 +79,17 @@ export function Ground() {
     };
 
     textureRef.current = createGrassTexture();
-
-    if (meshRef.current && textureRef.current) {
-      const material = meshRef.current.material as THREE.MeshStandardMaterial;
-      material.map = textureRef.current;
-      material.needsUpdate = true;
-      material.color = new THREE.Color("#ffffff"); // no extra darkening
-    }
   }, []);
 
   return (
     <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <planeGeometry args={[100, 100]} />
+      <primitive object={elevationGeometry} />
       <meshStandardMaterial
-        map={textureRef.current}
+        map={textureRef.current || undefined}
         color="#ffffff"
         roughness={0.8}
         metalness={0.1}
+        side={THREE.DoubleSide}
       />
     </mesh>
   );

@@ -124,6 +124,105 @@ This directory contains React components that provide property panels for differ
   - Step increment of 0.1 for precision
   - Proper labeling and validation
 
+#### [`ElevationControl`](./shared/ElevationControl.tsx:11)
+
+- **Type**: React Functional Component
+- **Purpose**: Standard elevation slider with badge display
+- **Props**:
+  - `objectId: string` - Object ID for updates
+  - `elevation?: number` (default: 0)
+  - `label?: string` (default: "Elevation")
+  - `min?: number` (default: -5), `max?: number` (default: 5)
+  - `step?: number` (default: 0.1)
+  - `className?: string` - Additional CSS classes
+- **Features**:
+  - Real-time elevation updates
+  - Formatted value display with unit
+  - Configurable range and precision
+  - Consistent styling across panels
+
+#### [`QuickActions`](./shared/QuickActions.tsx:7)
+
+- **Type**: React Functional Component
+- **Purpose**: Configurable grid of action buttons
+- **Props**:
+  - `actions: QuickAction[]` - Array of action configurations
+  - `label?: string` (default: "Quick Actions")
+  - `className?: string` - Additional CSS classes
+- **Features**:
+  - Configurable button layout (2-column grid)
+  - Customizable button variants and sizes
+  - Flexible action definitions
+  - Consistent styling and spacing
+
+#### [`StatisticsGrid`](./shared/StatisticsGrid.tsx:7)
+
+- **Type**: React Functional Component
+- **Purpose**: Flexible statistics display with customizable columns
+- **Props**:
+  - `statistics: Statistic[]` - Array of statistic configurations
+  - `columns?: 2 | 3 | 4` (default: 2)
+  - `className?: string` - Additional CSS classes
+- **Features**:
+  - Configurable grid layout (2-4 columns)
+  - Customizable value formatting
+  - Consistent card styling
+  - Flexible label and unit display
+
+#### [`ColorPalette`](./shared/ColorPalette.tsx:7)
+
+- **Type**: React Functional Component
+- **Purpose**: Grid-based color selection with optional labels
+- **Props**:
+  - `colors: ColorOption[]` - Array of color options
+  - `selectedColor?: string` - Currently selected color
+  - `onColorChange: (color: string) => void` - Selection callback
+  - `className?: string` - Additional CSS classes
+  - `size?: "sm" | "md" | "lg"` (default: "md")
+  - `showLabels?: boolean` (default: false)
+- **Features**:
+  - Configurable color button sizes
+  - Optional color labels
+  - Visual selection feedback
+  - Responsive grid layout
+
+#### [`TypeSelector`](./shared/TypeSelector.tsx:7)
+
+- **Type**: React Functional Component
+- **Purpose**: Enhanced select dropdown with descriptions and icons
+- **Props**:
+  - `options: TypeOption[]` - Array of type options
+  - `value: string` - Currently selected value
+  - `onValueChange: (value: string) => void` - Selection callback
+  - `label?: string` - Optional label text
+  - `className?: string` - Additional CSS classes
+  - `placeholder?: string` (default: "Select type...")
+- **Features**:
+  - Rich option display with icons and descriptions
+  - Consistent styling with standard select components
+  - Configurable labels and placeholders
+  - Accessible keyboard navigation
+
+#### [`DimensionSlider`](./shared/DimensionSlider.tsx:7)
+
+- **Type**: React Functional Component
+- **Purpose**: Slider with value badge and range labels
+- **Props**:
+  - `value: number` - Current value
+  - `onValueChange: (value: number) => void` - Change callback
+  - `label: string` - Display label
+  - `unit?: string` (default: "m")
+  - `min?: number` (default: 0.5), `max?: number` (default: 10)
+  - `step?: number` (default: 0.5)
+  - `className?: string` - Additional CSS classes
+  - `showRangeLabels?: boolean` (default: false)
+  - `formatValue?: (value: number) => string` - Custom value formatting
+- **Features**:
+  - Real-time value display with badge
+  - Optional range labels
+  - Customizable value formatting
+  - Consistent styling across dimension controls
+
 ## Dependencies
 
 - **React**: Core React functionality

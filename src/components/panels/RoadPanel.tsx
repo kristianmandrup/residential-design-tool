@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import {
+  ElevationControl,
+  QuickActions,
+  StatisticsGrid,
+  TypeSelector,
+  DimensionSlider,
+} from "./shared";
 interface RoadPanelProps {
   road: RoadObj;
 }
@@ -57,8 +64,8 @@ export function RoadPanel({ road }: RoadPanelProps) {
       });
     }
   };
-  const handleWidthChange = (value: number[]) => {
-    updateObject(road.id, { width: value[0] });
+  const handleWidthChange = (width: number) => {
+    updateObject(road.id, { width });
   };
   const calculateLength = () => {
     if (!road.points || road.points.length < 2) return 0;
@@ -84,95 +91,66 @@ export function RoadPanel({ road }: RoadPanelProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Road Type */}
-        <div className="space-y-2">
-          <Label htmlFor="road-type" className="text-sm font-medium">
-            Road Type
-          </Label>
-          <Select value={road.roadType} onValueChange={handleTypeChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {roadTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  <div className="flex flex-col">
-                    <span>{type.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {type.description}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            {currentType.description}
-          </p>
-        </div>
+        <TypeSelector
+          options={roadTypes}
+          value={road.roadType}
+          onValueChange={handleTypeChange}
+          label="Road Type"
+        />
+        <p className="text-xs text-muted-foreground">
+          {currentType.description}
+        </p>
+
         {/* Road Width */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Width</Label>
-            <Badge variant="outline" className="text-xs">
-              {road.width || currentType.width}m
-            </Badge>
-          </div>
-          <Slider
-            value={[road.width || currentType.width]}
-            onValueChange={handleWidthChange}
-            min={1}
-            max={20}
-            step={0.5}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>1m</span>
-            <span>20m</span>
-          </div>
-        </div>
+        <DimensionSlider
+          value={road.width || currentType.width}
+          onValueChange={handleWidthChange}
+          label="Width"
+          min={1}
+          max={20}
+          step={0.5}
+          showRangeLabels
+          formatValue={(value) => `${value}m`}
+        />
+
+        {/* Road Elevation */}
+        <ElevationControl objectId={road.id} elevation={road.elevation} />
 
         {/* Road Statistics */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Statistics</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {calculateLength().toFixed(1)}m
-              </span>
-              <span className="text-xs text-muted-foreground">Length</span>
-            </div>
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {(
-                  (road.width || currentType.width) * calculateLength()
-                ).toFixed(1)}
-                m²
-              </span>
-              <span className="text-xs text-muted-foreground">Area</span>
-            </div>
-          </div>
-        </div>
+        <StatisticsGrid
+          statistics={[
+            {
+              label: "Length",
+              value: calculateLength().toFixed(1),
+              unit: "m",
+            },
+            {
+              label: "Area",
+              value: (
+                (road.width || currentType.width) * calculateLength()
+              ).toFixed(1),
+              unit: "m²",
+            },
+          ]}
+        />
 
         {/* Quick Actions */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Quick Actions</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTypeChange("residential")}
-            >
-              Reset Type
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleWidthChange([currentType.width])}
-            >
-              Reset Width
-            </Button>
-          </div>
-        </div>
+        <QuickActions
+          actions={[
+            {
+              label: "Reset Type",
+              onClick: () => handleTypeChange("residential"),
+              variant: "outline",
+              size: "sm",
+            },
+            {
+              label: "Reset Width",
+              onClick: () => handleWidthChange(currentType.width),
+              variant: "outline",
+              size: "sm",
+            },
+          ]}
+        />
       </CardContent>
     </Card>
   );

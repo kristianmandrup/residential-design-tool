@@ -1,47 +1,65 @@
 # Objects Geometry Summary
 
-This directory contains specialized geometry generation utilities for creating 3D object geometries. Currently focused on road geometry generation with support for curved paths and complex road structures.
+This directory contains specialized geometry generation utilities for creating 3D object geometries. The system has been refactored to support multiple object types (roads, water, walls) with a modular architecture.
+
+## Architecture Overview
+
+The geometry system has been reorganized into the following modules:
+
+### Core Types
+
+- **[`types.ts`](./types.ts)** - TypeScript interfaces and type definitions
+- **[`index.ts`](./index.ts)** - Main export file for the geometry system
+
+### Utility Modules
+
+- **[`bezierUtils.ts`](./bezierUtils.ts)** - Bezier curve mathematics and utilities
+- **[`pathUtils.ts`](./pathUtils.ts)** - Path generation and curve interpolation
+- **[`boundsUtils.ts`](./boundsUtils.ts)** - Bounds calculation and spatial analysis
+
+### Geometry Generators
+
+- **[`roadGeometry.ts`](./roadGeometry.ts)** - Road geometry generation
+- **[`waterGeometry.ts`](./waterGeometry.ts)** - Water geometry generation
+- **[`wallGeometry.ts`](./wallGeometry.ts)** - Wall geometry generation
+
+### Main Entry Point
+
+- **[`genericGeometry.ts`](./genericGeometry.ts)** - Unified geometry generation coordinator
 
 ## Exported Functions
 
-### [`generateRoadGeometry()`](./roadGeometry.ts:88)
+### Core Geometry Functions
 
-- **Type**: `(roadPoints: RoadPoint[], width: number, elevation?: number, thickness?: number) => RoadGeometryResult`
-- **Purpose**: Generates complete road geometry including surfaces, sides, and end caps
+#### [`generateGenericGeometry()`](./genericGeometry.ts:15)
+
+- **Type**: `(points: RoadPoint[], config: GeometryConfig) => GenericGeometryResult`
+- **Purpose**: Main entry point for generating geometry based on type and configuration
 - **Parameters**:
-  - `roadPoints: RoadPoint[]` - Array of road points with optional control points
-  - `width: number` - Road width in meters
-  - `elevation?: number` - Road elevation above ground (default: 0)
-  - `thickness?: number` - Road thickness in meters (default: 0.1)
-- **Returns**: [`RoadGeometryResult`](./roadGeometry.ts:5) with geometry data
+  - `points: RoadPoint[]` - Array of points defining the geometry
+  - `config: GeometryConfig` - Configuration object with geometry type and properties
+- **Returns**: [`GenericGeometryResult`](./types.ts:5) with geometry data
 - **Features**:
-  - **Input Validation**: Comprehensive validation of points, dimensions, and coordinates
-  - **Curve Support**: Handles both straight and curved road segments using control points
-  - **Direction Calculation**: Intelligent direction vector calculation for smooth transitions
-  - **Perpendicular Generation**: Proper perpendicular vectors for road width
-  - **Multi-Surface Geometry**: Generates top, bottom, and side surfaces
-  - **UV Mapping**: Proper UV coordinates for texturing
-  - **Normal Calculation**: Correct vertex normals for proper lighting
-  - **End Caps**: Proper end cap geometry for road segments
+  - **Multi-Type Support**: Handles roads, water, and walls
+  - **Input Validation**: Comprehensive validation of points and configuration
+  - **Path Generation**: Uses [`generateGenericPath()`](./pathUtils.ts:9) for curve support
+  - **Bounds Calculation**: Automatically calculates spatial bounds
   - **Error Handling**: Robust error handling with fallback geometries
-  - **Debug Logging**: Comprehensive logging for development and debugging
 
-### [`generateRoadPath()`](./roadGeometry.ts:30)
+#### [`generatePreviewGeometry()`](./previewGeometry.ts:9)
 
-- **Type**: `(roadPoints: RoadPoint[], elevation?: number) => THREE.Vector3[]`
-- **Purpose**: Generates road path points from input road points, including curve interpolation
-- **Parameters**:
-  - `roadPoints: RoadPoint[]` - Array of road points
-  - `elevation?: number` - Path elevation (default: 0)
-- **Returns**: Array of THREE.Vector3 representing the road path
+- **Type**: `(points: RoadPoint[], config: GeometryConfig) => GenericGeometryResult`
+- **Purpose**: Generates simplified geometry for preview mode during drawing
+- **Parameters**: Same as [`generateGenericGeometry()`](./genericGeometry.ts:15)
+- **Returns**: [`GenericGeometryResult`](./types.ts:5) with preview geometry
 - **Features**:
-  - **Single Point Handling**: Returns single point for single-point roads
-  - **Curve Interpolation**: Uses Bezier curves for smooth curved segments
-  - **Control Point Support**: Handles optional control points for curve definition
-  - **Path Optimization**: Avoids duplicate points in continuous paths
-  - **Elevation Application**: Applies consistent elevation to all path points
+  - **Simplified Settings**: Uses optimized preview parameters
+  - **Visual Feedback**: Provides immediate visual feedback during drawing
+  - **Low Overhead**: Optimized for performance during interactive drawing
 
-### [`createBezierCurve()`](./roadGeometry.ts:11)
+### Utility Functions
+
+#### [`createBezierCurve()`](./bezierUtils.ts:5)
 
 - **Type**: `(start: THREE.Vector3, end: THREE.Vector3, control: THREE.Vector3, segments?: number) => THREE.Vector3[]`
 - **Purpose**: Creates Bezier curve points between start and end points
@@ -56,33 +74,117 @@ This directory contains specialized geometry generation utilities for creating 3
   - **Segment Control**: Configurable number of segments for curve smoothness
   - **Mathematical Accuracy**: Proper Bezier curve calculation using (1-t)², 2(1-t)t, t² weights
 
-### [`generatePreviewGeometry()`](./roadGeometry.ts:378)
+#### [`generateGenericPath()`](./pathUtils.ts:9)
 
-- **Type**: `(roadPoints: RoadPoint[], width: number, elevation?: number, thickness?: number) => RoadGeometryResult`
-- **Purpose**: Generates simplified geometry for preview mode during drawing
-- **Parameters**: Same as [`generateRoadGeometry()`](./roadGeometry.ts:88)
-- **Returns**: [`RoadGeometryResult`](./roadGeometry.ts:5) with preview geometry
+- **Type**: `(points: RoadPoint[], elevation?: number, config: GeometryConfig) => THREE.Vector3[]`
+- **Purpose**: Generates path points from input points, including curve interpolation
+- **Parameters**:
+  - `points: RoadPoint[]` - Array of points with optional control points
+  - `elevation?: number` - Path elevation (default: 0)
+  - `config: GeometryConfig` - Configuration affecting path generation
+- **Returns**: Array of THREE.Vector3 representing the path
 - **Features**:
-  - **Single Point Handling**: Creates small circle geometry for single-point preview
-  - **Simplified Generation**: Uses same logic as final geometry but with preview settings
-  - **Visual Feedback**: Provides immediate visual feedback during drawing
-  - **Low Overhead**: Optimized for performance during interactive drawing
+  - **Single Point Handling**: Returns single point for single-point geometries
+  - **Curve Interpolation**: Uses Bezier curves for smooth curved segments
+  - **Control Point Support**: Handles optional control points for curve definition
+  - **Path Optimization**: Avoids duplicate points in continuous paths
+  - **Elevation Application**: Applies consistent elevation to all path points
+  - **Shape Closing**: Automatically closes shapes for water geometries when requested
+
+#### [`calculateBounds()`](./boundsUtils.ts:5)
+
+- **Type**: `(path: THREE.Vector3[]) => BoundsResult`
+- **Purpose**: Calculates spatial bounds from path points
+- **Parameters**:
+  - `path: THREE.Vector3[]` - Array of path points
+- **Returns**: Bounds object with min/max coordinates and dimensions
+- **Features**:
+  - **Comprehensive Calculation**: Calculates min/max X and Z coordinates
+  - **Dimension Calculation**: Computes width and depth from bounds
+  - **Empty Path Handling**: Returns zero bounds for empty paths
+  - **Mathematical Accuracy**: Uses proper min/max calculations
+
+### Specialized Geometry Functions
+
+#### [`generateRoadGeometry()`](./roadGeometry.ts:5)
+
+- **Type**: `(path: THREE.Vector3[], config: GeometryConfig, elevation: number) => THREE.BufferGeometry`
+- **Purpose**: Generates road-like geometry (extruded path)
+- **Parameters**:
+  - `path: THREE.Vector3[]` - Generated path points
+  - `config: GeometryConfig` - Road-specific configuration
+  - `elevation: number` - Base elevation for the road
+- **Returns**: THREE.BufferGeometry with road geometry
+- **Features**:
+  - **Multi-Surface Geometry**: Generates top, bottom, and side surfaces
+  - **UV Mapping**: Proper UV coordinates for texturing
+  - **Normal Calculation**: Correct vertex normals for proper lighting
+  - **Direction Handling**: Intelligent direction vector calculation for smooth transitions
+  - **Perpendicular Generation**: Proper perpendicular vectors for road width
+
+#### [`generateWaterGeometry()`](./waterGeometry.ts:5)
+
+- **Type**: `(path: THREE.Vector3[], config: GeometryConfig, elevation: number) => THREE.BufferGeometry`
+- **Purpose**: Generates water geometry (flat surface with optional depth)
+- **Parameters**:
+  - `path: THREE.Vector3[]` - Generated path points
+  - `config: GeometryConfig` - Water-specific configuration
+  - `elevation: number` - Base elevation for the water
+- **Returns**: THREE.BufferGeometry with water geometry
+- **Features**:
+  - **Single Point**: Creates circle geometry for single point water features
+  - **Closed Shapes**: Creates filled shapes for closed water bodies
+  - **Open Paths**: Creates ribbon-like water surfaces for open paths
+  - **Flexible Geometry**: Supports both circular and irregular water shapes
+
+#### [`generateWallGeometry()`](./wallGeometry.ts:5)
+
+- **Type**: `(path: THREE.Vector3[], config: GeometryConfig, elevation: number) => THREE.BufferGeometry`
+- **Purpose**: Generates wall geometry (extruded line with height)
+- **Parameters**:
+  - `path: THREE.Vector3[]` - Generated path points
+  - `config: GeometryConfig` - Wall-specific configuration
+  - `elevation: number` - Base elevation for the wall
+- **Returns**: THREE.BufferGeometry with wall geometry
+- **Features**:
+  - **Height Support**: Configurable wall height
+  - **Thickness Control**: Configurable wall thickness
+  - **Multi-Surface**: Generates front, back, top, and bottom surfaces
+  - **Proper Normals**: Correct surface normals for lighting
 
 ## Data Structures
 
-### [`RoadGeometryResult`](./roadGeometry.ts:5)
+### [`GenericGeometryResult`](./types.ts:5)
 
 - **Type**: Interface
-- **Purpose**: Result object containing generated road geometry data
+- **Purpose**: Result object containing generated geometry data
 - **Properties**:
-  - `roadGeometry: THREE.BufferGeometry` - Complete road geometry with all surfaces
-  - `centerLinePoints: THREE.Vector3[]` - Points along the center line of the road
-  - `roadPath: THREE.Vector3[]` - Complete path points including curves
+  - `mainGeometry: THREE.BufferGeometry` - Complete geometry with all surfaces
+  - `centerLinePoints: THREE.Vector3[]` - Points along the center line
+  - `pathPoints: THREE.Vector3[]` - Complete path points including curves
+  - `bounds?: BoundsResult` - Calculated spatial bounds (optional)
+
+### [`GeometryConfig`](./types.ts:19)
+
+- **Type**: Interface
+- **Purpose**: Configuration object for geometry generation
+- **Properties**:
+  - `type: "road" | "water" | "wall"` - Geometry type
+  - `width?: number` - Width for roads and water
+  - `height?: number` - Height for water and walls
+  - `thickness?: number` - Thickness for roads and walls
+  - `elevation?: number` - Base elevation
+  - `radius?: number` - Radius for circular water features
+  - `segments?: number` - Number of segments for curves and circles
+  - `closedShape?: boolean` - Whether to close the shape (water)
+  - `doubleSided?: boolean` - Whether geometry is double-sided
+  - `transparent?: boolean` - Whether geometry is transparent
+  - `opacity?: number` - Opacity value
 
 ### [`RoadPoint`](../../store/storeTypes.ts)
 
 - **Type**: Interface (imported from store types)
-- **Purpose**: Definition for road point with optional control point
+- **Purpose**: Definition for point with optional control point
 - **Properties**:
   - `x: number` - X coordinate
   - `z: number` - Z coordinate
@@ -92,64 +194,66 @@ This directory contains specialized geometry generation utilities for creating 3
 
 ### 1. Input Validation
 
-- Validates minimum point count (≥2 for roads)
-- Checks for valid width and thickness values
+- Validates minimum point count based on geometry type
+- Checks for valid configuration values
 - Validates all point coordinates are valid numbers
 - Provides comprehensive error logging
 
 ### 2. Path Generation
 
-- Generates road path using [`generateRoadPath()`](./roadGeometry.ts:30)
+- Uses [`generateGenericPath()`](./pathUtils.ts:9) to create path with curves
 - Handles both straight and curved segments
 - Applies consistent elevation to all path points
+- Closes shapes when requested for water geometries
 
-### 3. Direction Calculation
+### 3. Bounds Calculation
 
-- Calculates direction vectors for each path point
-- Handles edge cases (first point, last point, middle points)
-- Uses perpendicular vectors for road width
+- Uses [`calculateBounds()`](./boundsUtils.ts:5) to determine spatial extent
+- Calculates min/max coordinates and dimensions
+- Provides spatial data for collision detection and UI
 
-### 4. Vertex Generation
+### 4. Geometry Generation
 
-- Creates top and bottom surface vertices
-- Generates side surface vertices
-- Calculates proper UV coordinates
-- Computes vertex normals
+- Routes to appropriate geometry generator based on type
+- Roads: [`generateRoadGeometry()`](./roadGeometry.ts:5)
+- Water: [`generateWaterGeometry()`](./waterGeometry.ts:5)
+- Walls: [`generateWallGeometry()`](./wallGeometry.ts:5)
+- Each generator creates proper vertex, normal, and UV data
 
-### 5. Triangle Generation
+### 5. Result Assembly
 
-- Creates triangle indices for all surfaces
-- Handles proper winding order
-- Adds end cap triangles
-
-### 6. Geometry Creation
-
-- Creates THREE.BufferGeometry with all attributes
-- Sets position, normal, and UV attributes
-- Computes final vertex normals
-- Validates geometry completeness
+- Combines geometry, path points, and bounds into result object
+- Ensures backward compatibility with existing interfaces
+- Provides comprehensive geometry data for consumers
 
 ## Dependencies
 
 - **Three.js**: Core 3D mathematics and geometry utilities
 - **Store Types**: RoadPoint interface from store types
-- **Console Logging**: Development and debugging support
+- **Modular Architecture**: Clean separation of concerns across modules
 
 ## Usage Patterns
 
-### Basic Road Generation
+### Basic Geometry Generation
 
 ```typescript
-import { generateRoadGeometry } from "@/components/objects/geometry";
+import { generateGenericGeometry } from "@/components/objects/geometry";
 
-const roadPoints = [
+const points = [
   { x: 0, z: 0 },
   { x: 5, z: 0, controlPoint: { x: 2.5, z: 2 } },
   { x: 10, z: 0 },
 ];
 
-const result = generateRoadGeometry(roadPoints, 6, 0.02, 0.1);
-// Use result.roadGeometry, result.centerLinePoints, result.roadPath
+const config = {
+  type: "road" as const,
+  width: 6,
+  thickness: 0.1,
+  elevation: 0.02,
+};
+
+const result = generateGenericGeometry(points, config);
+// Use result.mainGeometry, result.centerLinePoints, result.pathPoints, result.bounds
 ```
 
 ### Preview Generation
@@ -158,17 +262,33 @@ const result = generateRoadGeometry(roadPoints, 6, 0.02, 0.1);
 import { generatePreviewGeometry } from "@/components/objects/geometry";
 
 // During drawing mode
-const preview = generatePreviewGeometry(currentPoints, 6, 0.01, 0.02);
-// Use preview.roadGeometry for visual feedback
+const previewConfig = {
+  type: "water" as const,
+  width: 4,
+  elevation: 0.01,
+  closedShape: true,
+};
+
+const preview = generatePreviewGeometry(currentPoints, previewConfig);
+// Use preview.mainGeometry for visual feedback
 ```
 
 ### Path Generation
 
 ```typescript
-import { generateRoadPath } from "@/components/objects/geometry";
+import { generateGenericPath } from "@/components/objects/geometry";
 
-const path = generateRoadPath(roadPoints, elevation);
+const path = generateGenericPath(points, elevation, config);
 // Use path for calculations, debugging, or custom geometry
+```
+
+### Bezier Curve Creation
+
+```typescript
+import { createBezierCurve } from "@/components/objects/geometry";
+
+const curvePoints = createBezierCurve(start, end, control, 20);
+// Use curvePoints for custom geometry or debugging
 ```
 
 ## Error Handling
@@ -179,9 +299,11 @@ The geometry generation includes comprehensive error handling:
 - **Fallback Geometry**: Returns empty geometry on errors
 - **Error Logging**: Detailed error messages for debugging
 - **Exception Handling**: Try-catch blocks for robust error recovery
+- **Type Safety**: TypeScript ensures proper usage and type checking
 
 ## Performance Considerations
 
+- **Modular Loading**: Only load needed geometry generators
 - **Optimized Loops**: Efficient vertex and index generation
 - **Memory Management**: Proper cleanup and validation
 - **Preview Optimization**: Simplified geometry for interactive use
@@ -191,10 +313,11 @@ The geometry generation includes comprehensive error handling:
 
 This geometry system is used by:
 
-- **Drawing Behaviors**: [`enhancedRoadDrawingBehavior`](../behaviors/enhancedRoadDrawingBehavior.ts:121)
-- **Object Components**: Road object rendering components
+- **Drawing Behaviors**: Enhanced drawing behaviors for different object types
+- **Object Components**: Road, water, and wall object rendering components
 - **Preview Systems**: Real-time preview during drawing
 - **Validation Systems**: Geometry validation and error checking
+- **UI Systems**: Bounds calculation for UI positioning
 
 ## Assessment: Is Geometry Folder Still Needed?
 
@@ -202,18 +325,29 @@ This geometry system is used by:
 
 ### Reasons for Keeping:
 
-1. **Specialized Logic**: Road geometry generation involves complex mathematical calculations that are not generic
-2. **Performance Optimization**: Road-specific optimizations are not applicable to other object types
-3. **Curve Support**: Bezier curve handling is specific to road geometry
-4. **Error Handling**: Road-specific validation and error recovery
-5. **Maintainability**: Separates complex geometry logic from generic drawing systems
-6. **Reusability**: Can be extended for other path-based objects (rivers, walls, etc.)
+1. **Specialized Logic**: Geometry generation involves complex mathematical calculations
+2. **Performance Optimization**: Type-specific optimizations are important
+3. **Curve Support**: Bezier curve handling is essential for smooth geometries
+4. **Error Handling**: Robust validation and error recovery
+5. **Maintainability**: Clean separation of concerns and modular architecture
+6. **Reusability**: Common utilities can be shared across geometry types
+7. **Extensibility**: Easy to add new geometry types in the future
 
-### Potential Improvements:
+### Benefits of Refactoring:
 
-1. **Add More Object Types**: Extend to support rivers, walls, and other path-based objects
-2. **Generic Path Interface**: Create a more generic path interface for reuse
-3. **Configuration Integration**: Better integration with visual configurations
-4. **Performance Testing**: Add performance benchmarks and optimizations
+1. **Modularity**: Each geometry type has its own dedicated module
+2. **Reusability**: Common utilities (bezier, path, bounds) are shared
+3. **Maintainability**: Easier to debug and modify specific geometry types
+4. **Type Safety**: Better TypeScript support with dedicated type definitions
+5. **Performance**: Only load needed geometry generators
+6. **Testability**: Easier to unit test individual components
 
-The geometry folder provides a clean separation of concerns and contains specialized logic that would be difficult to integrate into the generic drawing system without making it overly complex.
+### Future Improvements:
+
+1. **Add More Object Types**: Extend to support rivers, fences, and other path-based objects
+2. **Configuration System**: More sophisticated configuration management
+3. **Performance Testing**: Add performance benchmarks and optimizations
+4. **Documentation**: Better inline documentation and examples
+5. **Testing**: Comprehensive unit tests for all geometry functions
+
+The refactored geometry system provides a solid foundation for 3D object generation with clear separation of concerns, excellent maintainability, and room for future expansion.

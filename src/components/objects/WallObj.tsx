@@ -4,9 +4,11 @@ import React, { useMemo, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { WallObj } from "@/store/storeTypes";
 import { useSceneStore } from "@/store/useSceneStore";
+import { useElevation } from "@/contexts/ElevationContext";
 import { WALL_CONFIGS as ENHANCED_WALL_CONFIGS } from "./configs";
 import { GenericMarkings } from "./shared/GenericMarkings";
 import { GenericSelectionIndicators } from "./shared/GenericSelectionIndicators";
+import { generateGenericGeometry, type GeometryConfig } from "./geometry";
 
 export const Wall = EnhancedWall;
 interface EnhancedWallProps {
@@ -16,6 +18,7 @@ interface EnhancedWallProps {
 function EnhancedWall({ data }: EnhancedWallProps) {
   const groupRef = useRef<THREE.Group>(null);
   const selectedId = useSceneStore((s) => s.selectedId);
+  const { getGridElevation } = useElevation();
   const isSelected = selectedId === data.id;
   const wallType = (data as any).wallType || "concrete";
   const wallConfig =
@@ -59,9 +62,36 @@ function EnhancedWall({ data }: EnhancedWallProps) {
       },
     ];
   }, [data.position, data.rotation, wallLength]);
-  const pathPoints = useMemo(() => {
-    return wallPoints.map((p) => new THREE.Vector3(p.x, wallHeight / 2, p.z));
-  }, [wallPoints, wallHeight]);
+
+  // Calculate final elevation: grid elevation + object elevation
+  const gridElevation = useMemo(() => {
+    if (!wallPoints || wallPoints.length === 0) return 0;
+    // Use the first point to get grid elevation
+    const firstPoint = wallPoints[0];
+    return getGridElevation(firstPoint.x, firstPoint.z);
+  }, [wallPoints, getGridElevation]);
+
+  const finalElevation = (data.elevation ?? 0) + gridElevation;
+
+  const wallGeometry = useMemo(() => {
+    // Use generic geometry system for walls
+    const config: GeometryConfig = {
+      type: "wall",
+      width: wallLength,
+      height: wallHeight,
+      thickness: wallThickness,
+      elevation: finalElevation,
+    };
+
+    // Convert wall points to RoadPoint format
+    const roadPoints = wallPoints.map((point) => ({
+      x: point.x,
+      z: point.z,
+    }));
+
+    const geometryResult = generateGenericGeometry(roadPoints, config);
+    return geometryResult.mainGeometry;
+  }, [wallLength, wallHeight, wallThickness, wallPoints, finalElevation]);
   return (
     <group
       ref={groupRef}
@@ -84,8 +114,8 @@ function EnhancedWall({ data }: EnhancedWallProps) {
         }}
         castShadow
         receiveShadow
+        geometry={wallGeometry}
       >
-        <boxGeometry args={[wallLength, wallHeight, wallThickness]} />
         <meshStandardMaterial
           color={wallColor}
           emissive={
@@ -97,18 +127,22 @@ function EnhancedWall({ data }: EnhancedWallProps) {
         />
       </mesh>{" "}
       <GenericMarkings
-        centerLinePoints={pathPoints}
-        pathPoints={pathPoints}
+        centerLinePoints={wallPoints.map(
+          (p) => new THREE.Vector3(p.x, wallHeight / 2, p.z)
+        )}
+        pathPoints={wallPoints.map(
+          (p) => new THREE.Vector3(p.x, wallHeight / 2, p.z)
+        )}
         visualConfig={visualConfig}
         objectWidth={wallThickness}
-        objectElevation={0}
+        objectElevation={data.elevation ?? 0}
         objectThickness={wallHeight}
         objectType="wall"
       />{" "}
       <GenericSelectionIndicators
         points={wallPoints}
         isSelected={isSelected}
-        objectElevation={0}
+        objectElevation={data.elevation ?? 0}
         objectThickness={wallHeight}
         objectType="wall"
         objectWidth={wallThickness}

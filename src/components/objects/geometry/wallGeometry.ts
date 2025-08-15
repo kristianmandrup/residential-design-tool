@@ -1,18 +1,21 @@
-// src/components/objects/geometry/roadGeometry.ts
+// src/components/objects/geometry/wallGeometry.ts
 import * as THREE from "three";
 import { GeometryConfig } from "./types";
 
 /**
- * Generate road-like geometry (extruded path)
+ * Generate wall geometry (extruded line with height)
  */
-export function generateRoadGeometry(
+export function generateWallGeometry(
   path: THREE.Vector3[],
   config: GeometryConfig,
   elevation: number
 ): THREE.BufferGeometry {
-  const width = config.width || 2;
-  const thickness = config.thickness || 0.1;
-  const halfWidth = width / 2;
+  const thickness = config.thickness || 0.2;
+  const height = config.height || 2;
+
+  if (path.length < 2) {
+    return new THREE.BufferGeometry();
+  }
 
   const vertices: number[] = [];
   const indices: number[] = [];
@@ -52,46 +55,36 @@ export function generateRoadGeometry(
       direction.x
     ).normalize();
 
-    // Top surface
-    const topY = elevation + thickness;
-    const topLeft = point
-      .clone()
-      .add(perpendicular.clone().multiplyScalar(halfWidth));
-    topLeft.y = topY;
-    const topRight = point
-      .clone()
-      .add(perpendicular.clone().multiplyScalar(-halfWidth));
-    topRight.y = topY;
-
-    // Bottom surface
-    const bottomY = elevation;
+    // Wall corners
     const bottomLeft = point
       .clone()
-      .add(perpendicular.clone().multiplyScalar(halfWidth));
-    bottomLeft.y = bottomY;
+      .add(perpendicular.clone().multiplyScalar(thickness / 2))
+      .setY(elevation);
     const bottomRight = point
       .clone()
-      .add(perpendicular.clone().multiplyScalar(-halfWidth));
-    bottomRight.y = bottomY;
+      .add(perpendicular.clone().multiplyScalar(-thickness / 2))
+      .setY(elevation);
+    const topLeft = bottomLeft.clone().add(new THREE.Vector3(0, height, 0));
+    const topRight = bottomRight.clone().add(new THREE.Vector3(0, height, 0));
 
     // Vertices
     vertices.push(
-      topLeft.x,
-      topLeft.y,
-      topLeft.z,
-      topRight.x,
-      topRight.y,
-      topRight.z,
       bottomLeft.x,
       bottomLeft.y,
       bottomLeft.z,
       bottomRight.x,
       bottomRight.y,
-      bottomRight.z
+      bottomRight.z,
+      topLeft.x,
+      topLeft.y,
+      topLeft.z,
+      topRight.x,
+      topRight.y,
+      topRight.z
     );
 
     // Normals
-    normals.push(0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0);
+    normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
 
     // UVs
     const u = i / (path.length - 1);
@@ -102,19 +95,21 @@ export function generateRoadGeometry(
   for (let i = 0; i < path.length - 1; i++) {
     const baseIndex = i * 4;
 
-    // Top surface
+    // Front face
+    indices.push(baseIndex, baseIndex + 2, baseIndex + 1);
+    indices.push(baseIndex + 1, baseIndex + 2, baseIndex + 3);
+
+    // Back face
+    indices.push(baseIndex + 1, baseIndex + 3, baseIndex);
+    indices.push(baseIndex + 3, baseIndex + 2, baseIndex);
+
+    // Top face
+    indices.push(baseIndex + 2, baseIndex + 6, baseIndex + 3);
+    indices.push(baseIndex + 3, baseIndex + 6, baseIndex + 7);
+
+    // Bottom face
     indices.push(baseIndex, baseIndex + 4, baseIndex + 1);
     indices.push(baseIndex + 1, baseIndex + 4, baseIndex + 5);
-
-    // Bottom surface
-    indices.push(baseIndex + 2, baseIndex + 3, baseIndex + 6);
-    indices.push(baseIndex + 3, baseIndex + 7, baseIndex + 6);
-
-    // Sides
-    indices.push(baseIndex, baseIndex + 2, baseIndex + 4);
-    indices.push(baseIndex + 2, baseIndex + 6, baseIndex + 4);
-    indices.push(baseIndex + 1, baseIndex + 5, baseIndex + 3);
-    indices.push(baseIndex + 3, baseIndex + 5, baseIndex + 7);
   }
 
   const geometry = new THREE.BufferGeometry();

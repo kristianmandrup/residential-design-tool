@@ -255,6 +255,60 @@ const {
 
 ---
 
+### 6. ElevationContext (`src/contexts/ElevationContext.tsx`)
+
+**Purpose**: Manages elevation data for grid coordinates, allowing terrain height manipulation.
+
+#### Exported Types
+
+```typescript
+interface ElevationContextType {
+  gridElevation: { [key: string]: number }; // x,z -> elevation
+  setGridElevation: (x: number, z: number, elevation: number) => void;
+  getGridElevation: (x: number, z: number) => number;
+  clearGridElevation: (x: number, z: number) => void;
+  clearAllGridElevation: () => void;
+  getGridElevationData: () => { [key: string]: number };
+}
+```
+
+#### Exported Functions
+
+- `useElevation()`: Hook to access the elevation context
+- `ElevationProvider`: React provider component
+
+#### Usage
+
+```typescript
+import { useElevation } from "@/contexts";
+
+const {
+  gridElevation,
+  setGridElevation,
+  getGridElevation,
+  clearGridElevation,
+  clearAllGridElevation,
+  getGridElevationData,
+} = useElevation();
+
+// Set elevation for a grid coordinate
+setGridElevation(5, 3, 2.5); // Set elevation at x=5, z=3 to 2.5
+
+// Get elevation for a grid coordinate
+const elevation = getGridElevation(5, 3); // Returns 2.5 or 0 if not set
+
+// Clear elevation for a specific coordinate
+clearGridElevation(5, 3);
+
+// Clear all elevation data
+clearAllGridElevation();
+
+// Get all elevation data
+const allElevationData = getGridElevationData();
+```
+
+---
+
 ## Index File (`src/contexts/index.ts`)
 
 The index file re-exports all contexts for easy importing:
@@ -264,6 +318,7 @@ export * from "./ToolContext";
 export * from "./GenericDrawingContext";
 export * from "./LayoutContext";
 export * from "./GridContext";
+export * from "./ElevationContext";
 ```
 
 ## Common Usage Patterns
@@ -277,6 +332,7 @@ import {
   LayoutProvider,
   GridProvider,
   EditorProvider,
+  ElevationProvider,
 } from "@/contexts";
 
 function App() {
@@ -285,7 +341,9 @@ function App() {
       <GenericDrawingProvider>
         <LayoutProvider>
           <GridProvider>
-            <EditorProvider>{/* Your app components */}</EditorProvider>
+            <EditorProvider>
+              <ElevationProvider>{/* Your app components */}</ElevationProvider>
+            </EditorProvider>
           </GridProvider>
         </LayoutProvider>
       </GenericDrawingProvider>
@@ -302,6 +360,7 @@ function MyComponent() {
   const { isDrawingRoad } = useGenericDrawingContext();
   const { showGrid } = useGrid();
   const { objects } = useEditor();
+  const { gridElevation } = useElevation();
 
   // Use all contexts together
   return (
@@ -310,6 +369,7 @@ function MyComponent() {
       <p>Drawing road: {isDrawingRoad ? "Yes" : "No"}</p>
       <p>Grid visible: {showGrid ? "Yes" : "No"}</p>
       <p>Objects in scene: {objects.length}</p>
+      <p>Elevation points: {Object.keys(gridElevation).length}</p>
     </div>
   );
 }
@@ -338,7 +398,7 @@ function SafeComponent() {
 
 ## Best Practices
 
-1. **Provider Order**: Ensure providers are nested in the correct order (outer to inner: Tool → GenericDrawing → Layout → Grid → Editor)
+1. **Provider Order**: Ensure providers are nested in the correct order (outer to inner: Tool → GenericDrawing → Layout → Grid → Editor → Elevation)
 2. **Error Handling**: Always wrap context hooks in try-catch or ensure they're used within their respective providers
 3. **Type Safety**: Use the exported types for better TypeScript support
 4. **Performance**: Context values are stable and won't cause unnecessary re-renders

@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import {
+  ElevationControl,
+  QuickActions,
+  StatisticsGrid,
+  TypeSelector,
+  DimensionSlider,
+} from "./shared";
 interface WaterPanelProps {
   water: WaterObj;
 }
@@ -62,11 +69,11 @@ export function WaterPanel({ water }: WaterPanelProps) {
   const handleShapeChange = (value: string) => {
     updateObject(water.id, { shape: value as "circular" | "rectangular" });
   };
-  const handleSizeChange = (value: number[]) => {
+  const handleSizeChange = (size: number) => {
     if (shape === "circular") {
-      updateObject(water.id, { radius: value[0] });
+      updateObject(water.id, { radius: size });
     } else {
-      updateObject(water.id, { width: value[0], depth: value[0] });
+      updateObject(water.id, { width: size, depth: size });
     }
   };
   const getCurrentSize = () => {
@@ -98,28 +105,13 @@ export function WaterPanel({ water }: WaterPanelProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Water Type */}
-        <div className="space-y-2">
-          <Label htmlFor="water-type" className="text-sm font-medium">
-            Water Type
-          </Label>
-          <Select value={waterType} onValueChange={handleTypeChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {waterTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  <div className="flex flex-col">
-                    <span>{type.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {type.description}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <TypeSelector
+          options={waterTypes}
+          value={waterType}
+          onValueChange={handleTypeChange}
+          label="Water Type"
+        />
+
         {/* Shape */}
         <div className="space-y-2">
           <Label className="text-sm font-medium">Shape</Label>
@@ -135,68 +127,52 @@ export function WaterPanel({ water }: WaterPanelProps) {
         </div>
 
         {/* Size */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">
-              {shape === "circular" ? "Radius" : "Size"}
-            </Label>
-            <Badge variant="outline" className="text-xs">
-              {getCurrentSize()}m
-            </Badge>
-          </div>
-          <Slider
-            value={[getCurrentSize()]}
-            onValueChange={handleSizeChange}
-            min={0.5}
-            max={20}
-            step={0.5}
-            className="w-full"
-          />
-        </div>
+        <DimensionSlider
+          value={getCurrentSize()}
+          onValueChange={handleSizeChange}
+          label={shape === "circular" ? "Radius" : "Size"}
+          min={0.5}
+          max={20}
+          step={0.5}
+          formatValue={(value) => `${value}m`}
+        />
+
+        {/* Water Elevation */}
+        <ElevationControl objectId={water.id} elevation={water.elevation} />
 
         {/* Water Statistics */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Statistics</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {calculateArea().toFixed(1)}m²
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Surface Area
-              </span>
-            </div>
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {((water.transparency || 0.8) * 100).toFixed(0)}%
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Transparency
-              </span>
-            </div>
-          </div>
-        </div>
+        <StatisticsGrid
+          statistics={[
+            {
+              label: "Surface Area",
+              value: calculateArea().toFixed(1),
+              unit: "m²",
+            },
+            {
+              label: "Transparency",
+              value: ((water.transparency || 0.8) * 100).toFixed(0),
+              unit: "%",
+            },
+          ]}
+        />
 
         {/* Quick Actions */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Quick Actions</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTypeChange("pond")}
-            >
-              Reset Type
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSizeChange([2])}
-            >
-              Reset Size
-            </Button>
-          </div>
-        </div>
+        <QuickActions
+          actions={[
+            {
+              label: "Reset Type",
+              onClick: () => handleTypeChange("pond"),
+              variant: "outline",
+              size: "sm",
+            },
+            {
+              label: "Reset Size",
+              onClick: () => handleSizeChange(2),
+              variant: "outline",
+              size: "sm",
+            },
+          ]}
+        />
       </CardContent>
     </Card>
   );

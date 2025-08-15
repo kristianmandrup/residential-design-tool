@@ -15,7 +15,15 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { CollapsibleSection, PositionInputs, GridSizeFields } from "./shared";
+import {
+  CollapsibleSection,
+  PositionInputs,
+  GridSizeFields,
+  ElevationControl,
+  QuickActions,
+  StatisticsGrid,
+  TypeSelector,
+} from "./shared";
 interface BuildingPanelProps {
   building: BuildingObj;
 }
@@ -107,6 +115,13 @@ export function BuildingPanel({ building }: BuildingPanelProps) {
             }
           />
         </CollapsibleSection>{" "}
+        {/* Building Elevation */}
+        <CollapsibleSection title="Elevation" defaultCollapsed={true}>
+          <ElevationControl
+            objectId={building.id}
+            elevation={building.elevation}
+          />
+        </CollapsibleSection>{" "}
         {/* Building Configuration */}
         <CollapsibleSection
           title="Building Configuration"
@@ -128,29 +143,12 @@ export function BuildingPanel({ building }: BuildingPanelProps) {
               className="w-full"
             />
           </div>{" "}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Roof Type</Label>
-            <Select
-              value={building.roofType}
-              onValueChange={handleRoofTypeChange}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {roofTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div className="flex flex-col">
-                      <span>{type.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {type.description}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <TypeSelector
+            options={roofTypes}
+            value={building.roofType}
+            onValueChange={handleRoofTypeChange}
+            label="Roof Type"
+          />
         </CollapsibleSection>{" "}
         {/* Colors */}
         <CollapsibleSection title="Colors" defaultCollapsed={true}>
@@ -235,37 +233,41 @@ export function BuildingPanel({ building }: BuildingPanelProps) {
           </div>
         </CollapsibleSection>{" "}
         {/* Statistics */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-            <span className="text-lg font-semibold text-primary">
-              {calculateTotalArea().toFixed(0)}m²
-            </span>
-            <span className="text-xs text-muted-foreground">Total Area</span>
-          </div>
-          <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-            <span className="text-lg font-semibold text-primary">
-              {((building.gridHeight || 1) * building.floors * 1.0).toFixed(1)}m
-            </span>
-            <span className="text-xs text-muted-foreground">Height</span>
-          </div>
-        </div>{" "}
+        <StatisticsGrid
+          statistics={[
+            {
+              label: "Total Area",
+              value: calculateTotalArea().toFixed(0),
+              unit: "m²",
+            },
+            {
+              label: "Height",
+              value: (
+                (building.gridHeight || 1) *
+                building.floors *
+                1.0
+              ).toFixed(1),
+              unit: "m",
+            },
+          ]}
+        />{" "}
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleRoofTypeChange("gabled")}
-          >
-            Reset Roof
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleFloorsChange([2])}
-          >
-            Reset Floors
-          </Button>
-        </div>
+        <QuickActions
+          actions={[
+            {
+              label: "Reset Roof",
+              onClick: () => handleRoofTypeChange("gabled"),
+              variant: "outline",
+              size: "sm",
+            },
+            {
+              label: "Reset Floors",
+              onClick: () => handleFloorsChange([2]),
+              variant: "outline",
+              size: "sm",
+            },
+          ]}
+        />
       </CardContent>
     </Card>
   );

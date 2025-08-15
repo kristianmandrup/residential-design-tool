@@ -3,6 +3,14 @@ import React from "react";
 import { TreeObj } from "@/store/storeTypes";
 import { useSceneStore } from "@/store/useSceneStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ElevationControl,
+  QuickActions,
+  StatisticsGrid,
+  ColorPalette,
+  TypeSelector,
+  DimensionSlider,
+} from "./shared";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,8 +65,7 @@ export function TreePanel({ tree }: TreePanelProps) {
       });
     }
   };
-  const handleSizeChange = (value: number[]) => {
-    const newSize = value[0];
+  const handleSizeChange = (newSize: number) => {
     updateObject(tree.id, {
       gridWidth: newSize,
       gridDepth: newSize,
@@ -84,115 +91,78 @@ export function TreePanel({ tree }: TreePanelProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Tree Type */}
-        <div className="space-y-2">
-          <Label htmlFor="tree-type" className="text-sm font-medium">
-            Tree Type
-          </Label>
-          <Select value={treeType} onValueChange={handleTypeChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {treeTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  <div className="flex flex-col">
-                    <span>{type.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {type.description}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <TypeSelector
+          options={treeTypes}
+          value={treeType}
+          onValueChange={handleTypeChange}
+          label="Tree Type"
+        />
+
         {/* Tree Size */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Size</Label>
-            <Badge variant="outline" className="text-xs">
-              {getCurrentSize()}x
-            </Badge>
-          </div>
-          <Slider
-            value={[getCurrentSize()]}
-            onValueChange={handleSizeChange}
-            min={0.5}
-            max={3}
-            step={0.5}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Small</span>
-            <span>Large</span>
-          </div>
-        </div>
+        <DimensionSlider
+          value={getCurrentSize()}
+          onValueChange={handleSizeChange}
+          label="Size"
+          min={0.5}
+          max={3}
+          step={0.5}
+          showRangeLabels
+          formatValue={(value) => `${value}x`}
+        />
+
+        {/* Tree Elevation */}
+        <ElevationControl objectId={tree.id} elevation={tree.elevation} />
 
         {/* Foliage Color */}
         <div className="space-y-3">
           <Label className="text-sm font-medium">Foliage Color</Label>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              "#2E8B57",
-              "#228B22",
-              "#32CD32",
-              "#FF6347",
-              "#FFD700",
-              "#8B4513",
-            ].map((color) => (
-              <button
-                key={color}
-                className={`w-12 h-12 rounded-lg border-2 transition-all hover:scale-105 ${
-                  tree.foliageColor === color
-                    ? "border-primary"
-                    : "border-muted"
-                }`}
-                style={{ backgroundColor: color }}
-                onClick={() => handleColorChange(color)}
-              />
-            ))}
-          </div>
+          <ColorPalette
+            colors={[
+              { value: "#2E8B57" },
+              { value: "#228B22" },
+              { value: "#32CD32" },
+              { value: "#FF6347" },
+              { value: "#FFD700" },
+              { value: "#8B4513" },
+            ]}
+            selectedColor={tree.foliageColor}
+            onColorChange={handleColorChange}
+          />
         </div>
 
         {/* Tree Statistics */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Statistics</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {(getCurrentSize() * 1.5).toFixed(1)}m
-              </span>
-              <span className="text-xs text-muted-foreground">Height</span>
-            </div>
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {(Math.PI * Math.pow(getCurrentSize() * 0.6, 2)).toFixed(1)}m²
-              </span>
-              <span className="text-xs text-muted-foreground">Canopy Area</span>
-            </div>
-          </div>
-        </div>
+        <StatisticsGrid
+          statistics={[
+            {
+              label: "Height",
+              value: (getCurrentSize() * 1.5).toFixed(1),
+              unit: "m",
+            },
+            {
+              label: "Canopy Area",
+              value: (Math.PI * Math.pow(getCurrentSize() * 0.6, 2)).toFixed(1),
+              unit: "m²",
+            },
+          ]}
+        />
 
         {/* Quick Actions */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Quick Actions</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTypeChange("oak")}
-            >
-              Reset Type
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSizeChange([1])}
-            >
-              Reset Size
-            </Button>
-          </div>
-        </div>
+        <QuickActions
+          actions={[
+            {
+              label: "Reset Type",
+              onClick: () => handleTypeChange("oak"),
+              variant: "outline",
+              size: "sm",
+            },
+            {
+              label: "Reset Size",
+              onClick: () => handleSizeChange(1),
+              variant: "outline",
+              size: "sm",
+            },
+          ]}
+        />
       </CardContent>
     </Card>
   );

@@ -1,7 +1,8 @@
 // File: src/components/objects/TreeObj.tsx
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import { TreeObj } from "@/store/storeTypes";
 import { useSceneStore } from "@/store/useSceneStore";
+import { useElevation } from "@/contexts/ElevationContext";
 import * as THREE from "three";
 interface TreeProps {
   data: TreeObj;
@@ -9,7 +10,15 @@ interface TreeProps {
 export function Tree({ data }: TreeProps) {
   const groupRef = useRef<THREE.Group | null>(null);
   const selectedId = useSceneStore((s) => s.selectedId);
+  const { getGridElevation } = useElevation();
   const isSelected = selectedId === data.id;
+
+  // Calculate final elevation: grid elevation + object elevation
+  const gridElevation = useMemo(() => {
+    return getGridElevation(data.position[0], data.position[2]);
+  }, [data.position, getGridElevation]);
+
+  const finalElevation = (data.elevation ?? 0) + gridElevation;
   useEffect(() => {
     if (!groupRef.current) return;
     groupRef.current.traverse((c) => {
@@ -41,7 +50,7 @@ export function Tree({ data }: TreeProps) {
       }}
     >
       <mesh
-        position={[0, height * 0.33, 0]}
+        position={[0, height * 0.33 + finalElevation, 0]}
         userData={{
           objectId: data.id,
           objectType: "tree",
@@ -58,7 +67,7 @@ export function Tree({ data }: TreeProps) {
         />
       </mesh>
       <mesh
-        position={[0, height * 0.9, 0]}
+        position={[0, height * 0.9 + finalElevation, 0]}
         userData={{
           objectId: data.id,
           objectType: "tree",
@@ -75,7 +84,7 @@ export function Tree({ data }: TreeProps) {
         />
       </mesh>
       {isSelected && (
-        <mesh position={[0, height * 0.5, 0]}>
+        <mesh position={[0, height * 0.5 + finalElevation, 0]}>
           <boxGeometry args={[width + 0.3, height + 0.3, depth + 0.3]} />
           <meshBasicMaterial
             color="#00ff00"

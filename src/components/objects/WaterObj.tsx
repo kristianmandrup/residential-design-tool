@@ -4,9 +4,11 @@ import React, { useMemo, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { WaterObj } from "@/store/storeTypes";
 import { useSceneStore } from "@/store/useSceneStore";
+import { useElevation } from "@/contexts/ElevationContext";
 import { WATER_CONFIGS as ENHANCED_WATER_CONFIGS } from "./configs";
 import { GenericMarkings } from "./shared/GenericMarkings";
 import { GenericSelectionIndicators } from "./shared/GenericSelectionIndicators";
+import { generateGenericGeometry, type GeometryConfig } from "./geometry";
 
 export const Water = EnhancedWater;
 
@@ -16,6 +18,7 @@ interface EnhancedWaterProps {
 function EnhancedWater({ data }: EnhancedWaterProps) {
   const groupRef = useRef<THREE.Group>(null);
   const selectedId = useSceneStore((s) => s.selectedId);
+  const { getGridElevation } = useElevation();
   const isSelected = selectedId === data.id;
   const waterType = (data as any).waterType || "pond";
   const waterConfig =
@@ -68,13 +71,40 @@ function EnhancedWater({ data }: EnhancedWaterProps) {
       ];
     }
   }, [data.position, shape, width, depth, radius]);
+
+  // Calculate final elevation: grid elevation + object elevation
+  const gridElevation = useMemo(() => {
+    if (!waterPoints || waterPoints.length === 0) return 0;
+    // Use the first point to get grid elevation
+    const firstPoint = waterPoints[0];
+    return getGridElevation(firstPoint.x, firstPoint.z);
+  }, [waterPoints, getGridElevation]);
+
+  const finalElevation = (data.elevation ?? 0) + gridElevation;
+
   const waterGeometry = useMemo(() => {
-    if (shape === "circular") {
-      return new THREE.CircleGeometry(radius, 32);
-    } else {
-      return new THREE.PlaneGeometry(width, depth);
-    }
-  }, [shape, radius, width, depth]);
+    // Use generic geometry system for water
+    const config: GeometryConfig = {
+      type: "water",
+      width: width,
+      height: depth,
+      elevation: finalElevation,
+      radius: radius,
+      segments: 32,
+      closedShape: shape === "circular" || shape === "rectangular",
+      transparent: true,
+      opacity: transparency,
+    };
+
+    // Convert water points to RoadPoint format
+    const roadPoints = waterPoints.map((point) => ({
+      x: point.x,
+      z: point.z,
+    }));
+
+    const geometryResult = generateGenericGeometry(roadPoints, config);
+    return geometryResult.mainGeometry;
+  }, [shape, radius, width, depth, waterPoints, finalElevation, transparency]);
   return (
     <group
       ref={groupRef}
@@ -119,7 +149,7 @@ function EnhancedWater({ data }: EnhancedWaterProps) {
         )}
         visualConfig={visualConfig}
         objectWidth={Math.max(width, depth)}
-        objectElevation={data.position[1]}
+        objectElevation={data.elevation ?? data.position[1]}
         objectThickness={waterHeight}
         objectType="water"
       />
@@ -127,7 +157,7 @@ function EnhancedWater({ data }: EnhancedWaterProps) {
       <GenericSelectionIndicators
         points={waterPoints}
         isSelected={isSelected}
-        objectElevation={data.position[1]}
+        objectElevation={data.elevation ?? data.position[1]}
         objectThickness={waterHeight}
         objectType="water"
         objectWidth={width}

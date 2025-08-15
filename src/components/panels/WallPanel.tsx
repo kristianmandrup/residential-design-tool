@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import {
+  ElevationControl,
+  QuickActions,
+  StatisticsGrid,
+  TypeSelector,
+  DimensionSlider,
+} from "./shared";
 interface WallPanelProps {
   wall: WallObj;
 }
@@ -63,11 +70,11 @@ export function WallPanel({ wall }: WallPanelProps) {
       } as any);
     }
   };
-  const handleLengthChange = (value: number[]) => {
-    updateObject(wall.id, { length: value[0] });
+  const handleLengthChange = (length: number) => {
+    updateObject(wall.id, { length });
   };
-  const handleHeightChange = (value: number[]) => {
-    updateObject(wall.id, { height: value[0] });
+  const handleHeightChange = (height: number) => {
+    updateObject(wall.id, { height });
   };
   return (
     <Card className="w-full">
@@ -78,111 +85,74 @@ export function WallPanel({ wall }: WallPanelProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Wall Type */}
-        <div className="space-y-2">
-          <Label htmlFor="wall-type" className="text-sm font-medium">
-            Wall Type
-          </Label>
-          <Select value={wallType} onValueChange={handleTypeChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {wallTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  <div className="flex flex-col">
-                    <span>{type.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {type.description}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <TypeSelector
+          options={wallTypes}
+          value={wallType}
+          onValueChange={handleTypeChange}
+          label="Wall Type"
+        />
+
         {/* Wall Length */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Length</Label>
-            <Badge variant="outline" className="text-xs">
-              {wall.length || 2}m
-            </Badge>
-          </div>
-          <Slider
-            value={[wall.length || 2]}
-            onValueChange={handleLengthChange}
-            min={0.5}
-            max={20}
-            step={0.5}
-            className="w-full"
-          />
-        </div>
+        <DimensionSlider
+          value={wall.length || 2}
+          onValueChange={handleLengthChange}
+          label="Length"
+          min={0.5}
+          max={20}
+          step={0.5}
+        />
 
         {/* Wall Height */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Height</Label>
-            <Badge variant="outline" className="text-xs">
-              {wall.height || currentType.height}m
-            </Badge>
-          </div>
-          <Slider
-            value={[wall.height || currentType.height]}
-            onValueChange={handleHeightChange}
-            min={0.5}
-            max={5}
-            step={0.1}
-            className="w-full"
-          />
-        </div>
+        <DimensionSlider
+          value={wall.height || currentType.height}
+          onValueChange={handleHeightChange}
+          label="Height"
+          min={0.5}
+          max={5}
+          step={0.1}
+        />
+
+        {/* Wall Elevation */}
+        <ElevationControl objectId={wall.id} elevation={wall.elevation} />
 
         {/* Wall Statistics */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Statistics</Label>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {(
-                  (wall.length || 2) * (wall.height || currentType.height)
-                ).toFixed(1)}
-                m²
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Surface Area
-              </span>
-            </div>
-            <div className="flex flex-col items-center p-3 rounded-lg bg-muted/50">
-              <span className="text-lg font-semibold text-primary">
-                {(wall.thickness || 0.2).toFixed(2)}m
-              </span>
-              <span className="text-xs text-muted-foreground">Thickness</span>
-            </div>
-          </div>
-        </div>
+        <StatisticsGrid
+          statistics={[
+            {
+              label: "Surface Area",
+              value: (
+                (wall.length || 2) * (wall.height || currentType.height)
+              ).toFixed(1),
+              unit: "m²",
+            },
+            {
+              label: "Thickness",
+              value: (wall.thickness || 0.2).toFixed(2),
+              unit: "m",
+            },
+          ]}
+        />
 
         {/* Quick Actions */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Quick Actions</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTypeChange("concrete")}
-            >
-              Reset Type
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                handleLengthChange([2]);
-                handleHeightChange([currentType.height]);
-              }}
-            >
-              Reset Size
-            </Button>
-          </div>
-        </div>
+        <QuickActions
+          actions={[
+            {
+              label: "Reset Type",
+              onClick: () => handleTypeChange("concrete"),
+              variant: "outline",
+              size: "sm",
+            },
+            {
+              label: "Reset Size",
+              onClick: () => {
+                handleLengthChange(2);
+                handleHeightChange(currentType.height);
+              },
+              variant: "outline",
+              size: "sm",
+            },
+          ]}
+        />
       </CardContent>
     </Card>
   );
