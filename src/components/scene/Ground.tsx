@@ -1,16 +1,55 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useCallback } from "react";
 import * as THREE from "three";
 import { useElevation } from "@/contexts/ElevationContext";
+import { useTerrain, TerrainType } from "@/contexts/TerrainContext";
+import {
+  useVegetation,
+  createVegetationMesh,
+  VegetationInstance,
+} from "@/contexts/VegetationContext";
+import { useTerrainEditing } from "@/contexts/TerrainEditingContext";
+import {
+  SlopeVisualization,
+  BrushPreview,
+} from "@/components/scene/SlopeVisualization";
+import { brushEffects } from "@/contexts/TerrainEditingContext";
 
 interface GroundProps {
   gridSize?: number;
   segments?: number;
+  enableTerrainBlending?: boolean;
+  showVegetation?: boolean;
 }
 
-export function Ground({ gridSize = 100, segments = 100 }: GroundProps) {
+export function Ground({
+  gridSize = 100,
+  segments = 100,
+  enableTerrainBlending = true,
+  showVegetation = true,
+}: GroundProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
   const { gridElevation } = useElevation();
+  const {
+    terrainTypes,
+    generateTerrainTexture,
+    getTerrainTypeAtPosition,
+    vegetationEnabled: terrainVegetationEnabled,
+    vegetationDensity: terrainVegetationDensity,
+  } = useTerrain();
+
+  const { vegetationInstances, generateVegetation, addVegetationInstance } =
+    useVegetation();
+
+  const {
+    isEditing,
+    brushPreview,
+    currentMode,
+    startEditing,
+    stopEditing,
+    updateBrushPosition,
+    applyBrushEffect,
+  } = useTerrainEditing();
 
   // Create elevation-based geometry
   const elevationGeometry = useMemo(() => {
@@ -36,61 +75,201 @@ export function Ground({ gridSize = 100, segments = 100 }: GroundProps) {
     return geometry;
   }, [gridSize, segments, gridElevation]);
 
+  // Generate terrain textures for all terrain types
   useEffect(() => {
-    const createGrassTexture = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 512;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return null;
+    const textures: { [key: string]: THREE.CanvasTexture } = {};
 
-      // Brighter grass colors
-      const grassColor = "#5cb85c";
-      const lightGrassColor = "#7fd27f";
-      const darkGrassColor = "#4a944a";
-
-      ctx.fillStyle = grassColor;
-      ctx.fillRect(0, 0, 512, 512);
-
-      for (let i = 0; i < 500; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 512;
-        const size = Math.random() * 3 + 1;
-        const colors = [lightGrassColor, darkGrassColor, grassColor];
-        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
+    Object.keys(terrainTypes).forEach((type) => {
+      const texture = generateTerrainTexture(type, 0);
+      if (texture) {
+        textures[type] = texture;
       }
+    });
 
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      for (let i = 0; i < 200; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 512;
-        ctx.fillRect(x, y, 1, 1);
+    // Set default texture
+    if (textures.grass) {
+      textureRef.current = textures.grass;
+    }
+  }, [terrainTypes, generateTerrainTexture]);
+
+  // Create blended terrain material based on elevation
+  const terrainMaterial = useMemo(() => {
+    if (!textureRef.current) return null;
+
+    const materials: THREE.MeshStandardMaterial[] = [];
+    const terrainKeys = Object.keys(terrainTypes);
+
+    // Create materials for each terrain type
+    terrainKeys.forEach((type) => {
+      const terrainType = terrainTypes[type];
+      const texture = generateTerrainTexture(type, 0);
+      if (texture) {
+        const material = new THREE.MeshStandardMaterial({
+          map: texture,
+          color: "#ffffff",
+          roughness: terrainType.roughness,
+          metalness: terrainType.metalness,
+          side: THREE.DoubleSide,
+        });
+        materials.push(material);
       }
+    });
 
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(20, 20);
-      texture.anisotropy = 16;
-      return texture;
-    };
+    if (materials.length === 0) return null;
 
-    textureRef.current = createGrassTexture();
-  }, []);
+    // For now, use the first material (grass) - will implement blending later
+    return materials[0];
+  }, [terrainTypes, generateTerrainTexture]);
+
+  // Generate vegetation based on terrain and elevation
+  useEffect(() => {
+    if (!showVegetation || !terrainVegetationEnabled) return;
+
+    const newVegetationInstances: VegetationInstance[] = [];
+
+    // Sample terrain at regular intervals to generate vegetation
+    const sampleInterval = 5; // Sample every 5 units
+    const halfGrid = gridSize / 2;
+
+    for (let x = -halfGrid; x < halfGrid; x += sampleInterval) {
+      for (let z = -halfGrid; z < halfGrid; z += sampleInterval) {
+        const elevation =
+          gridElevation[`${Math.round(x)},${Math.round(z)}`] || 0;
+        const terrainType = getTerrainTypeAtPosition(x, z, elevation);
+
+        // Generate vegetation for this area
+        const vegetation = generateVegetation(terrainType, elevation, {
+          min: [x - sampleInterval / 2, z - sampleInterval / 2],
+          max: [x + sampleInterval / 2, z + sampleInterval / 2],
+        });
+
+        newVegetationInstances.push(...vegetation);
+      }
+    }
+
+    // Add generated vegetation instances
+    newVegetationInstances.forEach((instance) => {
+      addVegetationInstance(instance);
+    });
+  }, [
+    gridSize,
+    gridElevation,
+    showVegetation,
+    terrainVegetationEnabled,
+    getTerrainTypeAtPosition,
+    generateVegetation,
+    addVegetationInstance,
+  ]);
+
+  // Handle terrain editing
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent) => {
+      if (!isEditing) return;
+
+      // Convert screen coordinates to world coordinates
+      // This is a simplified version - in a real implementation, you'd use raycasting
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x =
+        ((event.clientX - rect.left) / rect.width) * gridSize - gridSize / 2;
+      const z =
+        ((event.clientY - rect.top) / rect.height) * gridSize - gridSize / 2;
+
+      startEditing(currentMode.type, [x, z]);
+    },
+    [isEditing, currentMode.type, gridSize, startEditing]
+  );
+
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent) => {
+      if (!isEditing || !brushPreview.active) return;
+
+      // Convert screen coordinates to world coordinates
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x =
+        ((event.clientX - rect.left) / rect.width) * gridSize - gridSize / 2;
+      const z =
+        ((event.clientY - rect.top) / rect.height) * gridSize - gridSize / 2;
+
+      updateBrushPosition([x, z]);
+
+      // Apply brush effect while dragging
+      if (event.buttons === 1) {
+        // Left mouse button held down
+        applyBrushEffect([x, z], brushEffects[currentMode.type]);
+      }
+    },
+    [
+      isEditing,
+      brushPreview.active,
+      gridSize,
+      updateBrushPosition,
+      applyBrushEffect,
+      currentMode.type,
+    ]
+  );
+
+  const handlePointerUp = useCallback(() => {
+    if (isEditing) {
+      stopEditing();
+    }
+  }, [isEditing, stopEditing]);
 
   return (
-    <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <primitive object={elevationGeometry} />
-      <meshStandardMaterial
-        map={textureRef.current || undefined}
-        color="#ffffff"
-        roughness={0.8}
-        metalness={0.1}
-        side={THREE.DoubleSide}
+    <group ref={meshRef}>
+      {/* Main terrain mesh */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        <primitive object={elevationGeometry} />
+        {terrainMaterial ? (
+          <primitive object={terrainMaterial} />
+        ) : (
+          <meshStandardMaterial
+            map={textureRef.current || undefined}
+            color="#ffffff"
+            roughness={0.8}
+            metalness={0.1}
+            side={THREE.DoubleSide}
+          />
+        )}
+      </mesh>
+
+      {/* Slope visualization overlay */}
+      <SlopeVisualization
+        gridSize={gridSize}
+        segments={segments}
+        opacity={0.5}
       />
-    </mesh>
+
+      {/* Brush preview */}
+      {isEditing && brushPreview.position && (
+        <BrushPreview
+          position={brushPreview.position}
+          size={currentMode.brush.size}
+          strength={currentMode.brush.strength}
+          falloff={currentMode.brush.falloff}
+          shape={currentMode.brush.shape}
+        />
+      )}
+
+      {/* Vegetation system */}
+      {showVegetation &&
+        terrainVegetationEnabled &&
+        vegetationInstances.length > 0 && (
+          <group>
+            {vegetationInstances.map((vegetation) => (
+              <primitive
+                key={vegetation.id}
+                object={createVegetationMesh(vegetation)}
+              />
+            ))}
+          </group>
+        )}
+    </group>
   );
 }

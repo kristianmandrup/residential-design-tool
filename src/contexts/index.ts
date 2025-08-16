@@ -3,4 +3,7 @@ export * from "./GenericDrawingContext";
 export * from "./LayoutContext";
 export * from "./GridContext";
 export * from "./ElevationContext";
+export * from "./TerrainContext";
+export * from "./VegetationContext";
+export * from "./TerrainEditingContext";
 export * from "./EditorContext";

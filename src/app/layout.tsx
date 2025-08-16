@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "../../styles/globals.css";
 import { GridProvider } from "@/contexts/GridContext";
+import { TerrainProvider } from "@/contexts/TerrainContext";
+import { VegetationProvider } from "@/contexts/VegetationContext";
+import { TerrainEditingProvider } from "@/contexts/TerrainEditingContext";
 import TopMenu from "@/components/TopMenu";
 
 const geistSans = Geist({
@@ -31,8 +34,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <GridProvider>
-          <TopMenu />
-          {children}
+          <TerrainProvider>
+            <VegetationProvider>
+              <TerrainEditingProvider>
+                <TopMenu />
+                {children}
+              </TerrainEditingProvider>
+            </VegetationProvider>
+          </TerrainProvider>
         </GridProvider>
       </body>
     </html>

@@ -9,6 +9,7 @@ import {
   TransparentGrid,
 } from "./index";
 import { useGrid } from "@/contexts/GridContext";
+import { TerrainEditingControls } from "./TerrainEditingControls";
 interface SceneWrapperProps {
   transformMode: "translate" | "rotate" | "scale";
   setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
@@ -22,6 +23,9 @@ export function SceneWrapper({
     React.useState(true);
   return (
     <>
+      {/* Terrain Editing Controls */}
+      <TerrainEditingControls />
+
       {/* Lighting */}
       <ambientLight intensity={0.6} />
       <directionalLight
